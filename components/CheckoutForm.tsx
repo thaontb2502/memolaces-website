@@ -2,18 +2,64 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ClipboardCheck, MessageCircle, PackageCheck, PhoneCall } from 'lucide-react';
+import { CheckCircle2, Clipboard, ClipboardCheck, MessageCircle, PackageCheck, PhoneCall } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { EmptyState } from './EmptyState';
 import { formatCurrency } from '@/lib/format';
 import { siteConfig } from '@/lib/site-config';
+import type { CartItem } from '@/lib/types';
 
 const ORDER_KEY = 'csv-commerce-orders';
+
+const createOrderMessage = ({
+  id,
+  customer,
+  items,
+  total,
+}: {
+  id: string;
+  customer: {
+    fullName: string;
+    phone: string;
+    email: string;
+    address: string;
+    note: string;
+  };
+  items: CartItem[];
+  total: number;
+}) => {
+  const productLines = items.map((item, index) => [
+    `${index + 1}. ${item.productName || item.name || 'Sản phẩm'}`,
+    `   Phân loại: ${item.variantName}`,
+    `   SKU: ${item.sku}`,
+    `   Số lượng: ${item.quantity}`,
+    `   Giá: ${formatCurrency(item.price)}`,
+    `   Thành tiền: ${formatCurrency(item.price * item.quantity)}`,
+  ].join('\n'));
+
+  return [
+    `ĐƠN HÀNG MEMOLACES`,
+    `Mã đơn: ${id}`,
+    '',
+    `Họ tên: ${customer.fullName}`,
+    `Số điện thoại/Zalo: ${customer.phone}`,
+    customer.email ? `Email: ${customer.email}` : '',
+    `Địa chỉ: ${customer.address}`,
+    `Ghi chú: ${customer.note || 'Không có'}`,
+    '',
+    'Sản phẩm:',
+    productLines.join('\n\n'),
+    '',
+    `Tổng tiền: ${formatCurrency(total)}`,
+  ].filter(Boolean).join('\n');
+};
 
 export function CheckoutForm() {
   const { items, total, clearCart } = useCart();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState('');
+  const [orderMessage, setOrderMessage] = useState('');
+  const [copyStatus, setCopyStatus] = useState('');
   const [form, setForm] = useState({
     fullName: '',
     phone: '',
@@ -51,25 +97,68 @@ export function CheckoutForm() {
       items,
       total,
     };
+    const message = createOrderMessage(order);
 
     const saved = window.localStorage.getItem(ORDER_KEY);
     const orders = saved ? JSON.parse(saved) : [];
     window.localStorage.setItem(ORDER_KEY, JSON.stringify([order, ...orders]));
+    setOrderMessage(message);
+    setCopyStatus('');
+    if (navigator.clipboard) {
+      void navigator.clipboard.writeText(message).then(
+        () => setCopyStatus('Đã copy nội dung đơn hàng. Bạn có thể mở Zalo và dán gửi cho shop.'),
+        () => setCopyStatus('Bạn có thể bấm Copy đơn hàng rồi gửi qua Zalo cho shop.'),
+      );
+    } else {
+      setCopyStatus('Bạn có thể bấm Copy đơn hàng rồi gửi qua Zalo cho shop.');
+    }
     clearCart();
     setSuccess(order.id);
+  };
+
+  const copyOrder = async () => {
+    try {
+      await navigator.clipboard.writeText(orderMessage);
+      setCopyStatus('Đã copy nội dung đơn hàng.');
+    } catch {
+      setCopyStatus('Trình duyệt chưa cho copy tự động, bạn có thể chọn nội dung đơn bên dưới để copy thủ công.');
+    }
   };
 
   if (success) {
     return (
       <div className="container-page py-12">
-        <section className="rounded-lg border border-emerald-200 bg-white p-10 text-center shadow-lg">
+        <section className="rounded-lg border border-emerald-200 bg-white p-5 shadow-lg md:p-10">
           <CheckCircle2 className="mx-auto text-emerald-700" size={52} />
-          <h1 className="mt-4 text-3xl font-black text-emerald-950">Đặt hàng thành công</h1>
-          <p className="mt-3 text-stone-600">Mã đơn giả lập:</p>
-          <p className="mx-auto mt-3 w-fit rounded-lg bg-emerald-50 px-5 py-3 font-mono text-lg font-black text-emerald-900">{success}</p>
-          <p className="mt-3 text-sm text-stone-500">Đơn đã được lưu trong localStorage.</p>
-          <p className="mt-2 text-sm font-bold text-emerald-800">Shop sẽ liên hệ xác nhận qua số điện thoại/Zalo trước khi giao hàng.</p>
-          <Link href="/products" className="mt-6 inline-flex rounded-lg bg-emerald-900 px-5 py-3 text-sm font-black text-white">Tiếp tục mua hàng</Link>
+          <div className="text-center">
+            <h1 className="mt-4 text-3xl font-black text-emerald-950">Đặt hàng thành công</h1>
+            <p className="mt-3 text-stone-600">Mã đơn:</p>
+            <p className="mx-auto mt-3 w-fit rounded-lg bg-emerald-50 px-5 py-3 font-mono text-lg font-black text-emerald-900">{success}</p>
+            <p className="mt-3 text-sm text-stone-500">Đơn đã được lưu trong localStorage.</p>
+            <p className="mt-2 text-sm font-bold text-emerald-800">Shop sẽ liên hệ xác nhận qua số điện thoại/Zalo trước khi giao hàng.</p>
+          </div>
+          <div className="mx-auto mt-6 max-w-3xl rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-black text-emerald-950">Nội dung gửi shop</h2>
+              {copyStatus && <span className="text-sm font-bold text-emerald-700">{copyStatus}</span>}
+            </div>
+            <textarea
+              readOnly
+              value={orderMessage}
+              className="mt-3 min-h-72 w-full rounded-lg border border-stone-200 bg-white p-3 font-mono text-sm leading-6 text-stone-800 outline-none"
+            />
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <button type="button" onClick={copyOrder} className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-white px-5 py-3 text-sm font-black text-emerald-900 hover:bg-emerald-50">
+                <Clipboard size={18} />
+                Copy đơn hàng
+              </button>
+              <a href={siteConfig.zalo} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-rose-700">
+                <MessageCircle size={18} />
+                Gửi đơn qua Zalo
+              </a>
+              <Link href="/products" className="inline-flex items-center justify-center rounded-lg bg-emerald-900 px-5 py-3 text-sm font-black text-white hover:bg-emerald-800">Tiếp tục mua hàng</Link>
+            </div>
+          </div>
         </section>
       </div>
     );
