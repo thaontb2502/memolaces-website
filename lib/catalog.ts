@@ -187,36 +187,8 @@ const brandCategoryFrom = (rawCategory: string, name: string) => {
   const rawLookup = normalizeLookup(rawCategory);
   const lookup = normalizeLookup(`${rawCategory} ${name}`);
 
-  if (/\b(clean|cleaning|home care|care supplies)\b/.test(rawLookup)) {
-    return 'Vệ Sinh Giày';
-  }
-
-  if (/\b(shoe storage|storage box|organizer|organizers)\b/.test(rawLookup)) {
-    return 'Bảo Quản Giày';
-  }
-
-  if (/\b(decoration|decor|clock|clocks)\b/.test(rawLookup)) {
-    return 'Phụ Kiện Trang Trí';
-  }
-
   if (
-    /\b(clean|cleaning|care|wash|ve sinh|ban chai|khan lau|dung dich|microfiber|kit cham soc)\b/.test(
-      lookup,
-    )
-  ) {
-    return 'Vệ Sinh Giày';
-  }
-
-  if (
-    /\b(storage|organizer|organizers|box|bag|bao quan|hop|tui dung|hut am|chong nhan|shoe storage|shoe box)\b/.test(
-      lookup,
-    )
-  ) {
-    return 'Bảo Quản Giày';
-  }
-
-  if (
-    /\b(day giay|shoelace|shoelaces|shoe lace|laces|day oval|day flat|day tron|reflective lace|custom lace)\b/.test(
+    /\b(shoe laces|shoelace|shoelaces|laces|lace|day giay|day oval|day flat|day tron|reflective lace|custom lace)\b/.test(
       lookup,
     )
   ) {
@@ -224,10 +196,30 @@ const brandCategoryFrom = (rawCategory: string, name: string) => {
   }
 
   if (
-    /\b(charm|tag|tip|khoa|phu kien|trang tri|decoration|clock|dong ho|lace tag|lacetag|accessory|accessories)\b/.test(
+    /\b(shoe care|cleaning|cleaner|brush|care supplies|home care|wash|ve sinh|ban chai|khan lau|dung dich|microfiber|kit cham soc)\b/.test(
       lookup,
     )
   ) {
+    return 'Vệ Sinh Giày';
+  }
+
+  if (
+    /\b(storage|organizer|organizers|bag|box|bao quan|hop|tui dung|hut am|chong nhan|shoe storage|shoe box|storage box)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Bảo Quản Giày';
+  }
+
+  if (
+    /\b(charm|tag|tip|dau tip|khoa|phu kien trang tri|phu kien|trang tri|decoration|decor|clock|dong ho|lace tag|lacetag|accessory|accessories)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Phụ Kiện Trang Trí';
+  }
+
+  if (/\b(decoration|decor|clock|clocks)\b/.test(rawLookup)) {
     return 'Phụ Kiện Trang Trí';
   }
 

@@ -8,7 +8,7 @@ export const siteConfig = {
     'Nâng Tầm Đôi Giày Mỗi Ngày',
   ],
   shortDescription:
-    'Dây giày, phụ kiện trang trí, vệ sinh và bảo quản giày.',
+    'Memolaces chuyên dây giày, phụ kiện trang trí, vệ sinh và bảo quản giày, giúp bạn làm mới và chăm sóc đôi giày mỗi ngày.',
   description:
     'Memolaces xây dựng hệ sinh thái phụ kiện dành cho người yêu giày, từ dây giày, phụ kiện custom đến giải pháp vệ sinh và bảo quản.',
   categories: [
@@ -55,8 +55,9 @@ export const siteConfig = {
   ],
   phone: '0862 227 899',
   zalo: 'https://zalo.me/0862227899',
-  email: 'email@example.com',
+  email: 'memolaces.vn@gmail.com',
   address: 'Địa chỉ shop đang cập nhật',
   facebook: '#',
+  tiktok: '#',
   primaryColor: '#0f766e',
 };
