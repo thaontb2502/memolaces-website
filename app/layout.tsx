@@ -7,7 +7,7 @@ import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteConfig.shopName} | ${siteConfig.slogan}`,
+    default: `${siteConfig.shopName} - ${siteConfig.slogan}`,
     template: `%s | ${siteConfig.shopName}`,
   },
   description: siteConfig.shortDescription,

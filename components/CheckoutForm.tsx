@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ClipboardCheck, PackageCheck } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, MessageCircle, PackageCheck, PhoneCall } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { EmptyState } from './EmptyState';
 import { formatCurrency } from '@/lib/format';
+import { siteConfig } from '@/lib/site-config';
 
 const ORDER_KEY = 'csv-commerce-orders';
 
@@ -67,6 +68,7 @@ export function CheckoutForm() {
           <p className="mt-3 text-stone-600">Mã đơn giả lập:</p>
           <p className="mx-auto mt-3 w-fit rounded-lg bg-emerald-50 px-5 py-3 font-mono text-lg font-black text-emerald-900">{success}</p>
           <p className="mt-3 text-sm text-stone-500">Đơn đã được lưu trong localStorage.</p>
+          <p className="mt-2 text-sm font-bold text-emerald-800">Shop sẽ liên hệ xác nhận qua số điện thoại/Zalo trước khi giao hàng.</p>
           <Link href="/products" className="mt-6 inline-flex rounded-lg bg-emerald-900 px-5 py-3 text-sm font-black text-white">Tiếp tục mua hàng</Link>
         </section>
       </div>
@@ -77,6 +79,10 @@ export function CheckoutForm() {
     <div className="container-page grid gap-6 py-10 lg:grid-cols-[1fr_390px]">
       <form onSubmit={submit} className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm md:p-7">
         <h1 className="flex items-center gap-2 text-2xl font-black text-emerald-950"><ClipboardCheck size={24} /> Thông tin nhận hàng</h1>
+        <div className="mt-4 flex gap-3 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-900">
+          <PhoneCall size={20} className="mt-0.5 shrink-0" />
+          <p>Sau khi đặt hàng, shop sẽ liên hệ xác nhận qua số điện thoại/Zalo. Website chưa thanh toán online, bạn chỉ cần để lại thông tin nhận hàng.</p>
+        </div>
         <div className="mt-5 grid gap-4">
           {[
             ['fullName', 'Họ tên', 'Nguyễn Văn A'],
@@ -105,7 +111,13 @@ export function CheckoutForm() {
             />
           </label>
         </div>
-        <button type="submit" className="mt-6 w-full rounded-lg bg-rose-600 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-rose-700">Đặt hàng</button>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <button type="submit" className="rounded-lg bg-rose-600 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-rose-700">Đặt hàng</button>
+          <a href={siteConfig.zalo} className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-black text-emerald-900 hover:bg-emerald-100">
+            <MessageCircle size={18} />
+            Liên hệ Zalo
+          </a>
+        </div>
       </form>
 
       <aside className="h-fit rounded-lg border border-stone-200 bg-white p-5 shadow-lg lg:sticky lg:top-28">

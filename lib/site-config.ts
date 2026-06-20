@@ -8,7 +8,7 @@ export const siteConfig = {
     'Nâng Tầm Đôi Giày Mỗi Ngày',
   ],
   shortDescription:
-    'Memolaces xây dựng hệ sinh thái phụ kiện dành cho người yêu giày, nơi mọi chi tiết từ dây giày, phụ kiện custom đến giải pháp vệ sinh và bảo quản đều được lựa chọn với tiêu chí tối giản, bền bỉ và dễ sử dụng.',
+    'Dây giày, phụ kiện trang trí, vệ sinh và bảo quản giày.',
   description:
     'Memolaces xây dựng hệ sinh thái phụ kiện dành cho người yêu giày, từ dây giày, phụ kiện custom đến giải pháp vệ sinh và bảo quản.',
   categories: [
@@ -53,10 +53,10 @@ export const siteConfig = {
     'Hỗ trợ tư vấn lựa chọn độ dài phù hợp',
     'Liên tục cập nhật mẫu mới',
   ],
-  phone: '0900 000 000',
-  zalo: 'https://zalo.me/0900000000',
-  email: 'hello@example.com',
-  address: 'Địa chỉ cửa hàng của bạn',
-  facebook: 'https://facebook.com/',
+  phone: 'Số điện thoại/Zalo đang cập nhật',
+  zalo: '#',
+  email: 'email@example.com',
+  address: 'Địa chỉ shop đang cập nhật',
+  facebook: '#',
   primaryColor: '#0f766e',
 };

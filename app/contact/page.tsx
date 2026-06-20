@@ -28,7 +28,7 @@ export default function ContactPage() {
               <span className="flex gap-2"><MapPin size={18} className="text-emerald-700" /> {siteConfig.address}</span>
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <a href={`tel:${siteConfig.phone.replace(/\s+/g, '')}`} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-900 px-4 py-3 text-sm font-black text-white">
+              <a href="#" className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-900 px-4 py-3 text-sm font-black text-white">
                 <Phone size={17} /> Gọi điện
               </a>
               <a href={siteConfig.zalo} className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-200 px-4 py-3 text-sm font-black text-emerald-950">
