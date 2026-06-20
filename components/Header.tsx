@@ -10,9 +10,10 @@ import { siteConfig } from '@/lib/site-config';
 const navItems = [
   { href: '/', label: 'Trang chủ' },
   { href: '/products', label: 'Sản phẩm' },
-  { href: '/products?q=dây giày', label: 'Dây giày' },
-  { href: '/products?q=phụ kiện charm tag', label: 'Phụ kiện' },
-  { href: '/products?q=vệ sinh bảo quản khăn bàn chải hộp', label: 'Vệ sinh & bảo quản' },
+  { href: '/products?category=Dây%20Giày', label: 'Dây giày' },
+  { href: '/products?category=Phụ%20Kiện%20Trang%20Trí', label: 'Phụ kiện' },
+  { href: '/products?category=Vệ%20Sinh%20Giày', label: 'Vệ sinh' },
+  { href: '/products?category=Bảo%20Quản%20Giày', label: 'Bảo quản' },
   { href: '/contact', label: 'Liên hệ' },
 ];
 

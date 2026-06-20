@@ -14,7 +14,7 @@ export const siteConfig = {
   categories: [
     {
       name: 'Dây Giày',
-      href: '/products?q=dây giày',
+      href: '/products?category=Dây%20Giày',
       description: 'Dây giày phản quang, oval, flat, tròn, custom và theo mẫu giày.',
       children: [
         'Dây giày phản quang',
@@ -27,19 +27,19 @@ export const siteConfig = {
     },
     {
       name: 'Phụ Kiện Trang Trí',
-      href: '/products?q=phụ kiện charm tag khóa',
+      href: '/products?category=Phụ%20Kiện%20Trang%20Trí',
       description: 'Charm giày, dây treo, tag phụ kiện, khóa và đầu tip thay thế.',
       children: ['Charm giày', 'Dây treo trang trí', 'Tag phụ kiện', 'Khóa và đầu tip thay thế'],
     },
     {
       name: 'Vệ Sinh Giày',
-      href: '/products?q=vệ sinh khăn bàn chải dung dịch',
+      href: '/products?category=Vệ%20Sinh%20Giày',
       description: 'Dụng cụ làm sạch, khăn lau và bộ kit chăm sóc giày hằng ngày.',
       children: ['Bàn chải vệ sinh', 'Khăn lau giày', 'Dung dịch làm sạch', 'Bộ kit chăm sóc giày'],
     },
     {
       name: 'Bảo Quản Giày',
-      href: '/products?q=bảo quản túi hộp hút ẩm chống nhăn',
+      href: '/products?category=Bảo%20Quản%20Giày',
       description: 'Giải pháp cất giữ, bảo vệ form và kéo dài tuổi thọ đôi giày.',
       children: ['Túi đựng giày', 'Hộp bảo quản', 'Gói hút ẩm', 'Phụ kiện chống nhăn'],
     },

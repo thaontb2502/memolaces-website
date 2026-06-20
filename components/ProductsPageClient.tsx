@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Product, SortOption } from '@/lib/types';
 import { FilterSidebar } from './FilterSidebar';
 import { ProductGrid } from './ProductGrid';
@@ -22,6 +22,8 @@ export function ProductsPageClient({
   products: Product[];
   categories: string[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') ?? '';
   const initialCategory = searchParams.get('category') ?? 'all';
@@ -32,6 +34,28 @@ export function ProductsPageClient({
   const [price, setPrice] = useState('all');
   const [sort, setSort] = useState<SortOption>('price-asc');
   const [visible, setVisible] = useState(PAGE_SIZE);
+
+  const updateUrl = (updates: { category?: string; q?: string; stock?: string }) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if ('category' in updates) {
+      if (!updates.category || updates.category === 'all') params.delete('category');
+      else params.set('category', updates.category);
+    }
+
+    if ('q' in updates) {
+      if (!updates.q?.trim()) params.delete('q');
+      else params.set('q', updates.q.trim());
+    }
+
+    if ('stock' in updates) {
+      if (!updates.stock || updates.stock === 'all') params.delete('stock');
+      else params.set('stock', updates.stock);
+    }
+
+    const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  };
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -65,9 +89,20 @@ export function ProductsPageClient({
   }, [category, price, products, query, sort, stock]);
 
   const shown = filtered.slice(0, visible);
+  const pageTitle = category === 'all' ? 'Tất cả sản phẩm' : category;
 
   return (
-    <div className="container-page grid gap-6 pb-14 lg:grid-cols-[290px_1fr]">
+    <>
+      <section className="container-page pb-6">
+        <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+          <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Catalog</span>
+          <h1 className="mt-1 text-4xl font-black text-emerald-950">{pageTitle}</h1>
+          <p className="mt-3 max-w-2xl text-stone-600">
+            Tìm kiếm, lọc theo danh mục, khoảng giá, trạng thái hàng và sắp xếp theo nhu cầu.
+          </p>
+        </div>
+      </section>
+      <div className="container-page grid gap-6 pb-14 lg:grid-cols-[290px_1fr]">
       <FilterSidebar
         categories={categories}
         category={category}
@@ -77,10 +112,12 @@ export function ProductsPageClient({
         onCategoryChange={(value) => {
           setCategory(value);
           setVisible(PAGE_SIZE);
+          updateUrl({ category: value });
         }}
         onStockChange={(value) => {
           setStock(value);
           setVisible(PAGE_SIZE);
+          updateUrl({ stock: value });
         }}
         onPriceChange={(value) => {
           setPrice(value);
@@ -97,6 +134,7 @@ export function ProductsPageClient({
           onChange={(value) => {
             setQuery(value);
             setVisible(PAGE_SIZE);
+            updateUrl({ q: value });
           }}
         />
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-600 shadow-sm">
@@ -111,5 +149,6 @@ export function ProductsPageClient({
         )}
       </div>
     </div>
+    </>
   );
 }
