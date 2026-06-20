@@ -183,16 +183,60 @@ const normalizeLookup = (value: string) =>
 
 const variantOptionKey = (value: string) => normalizeLookup(value.split(',')[0] ?? value);
 
+const brandCategoryFrom = (rawCategory: string, name: string) => {
+  const rawLookup = normalizeLookup(rawCategory);
+  const lookup = normalizeLookup(`${rawCategory} ${name}`);
+
+  if (/\b(clean|cleaning|home care|care supplies)\b/.test(rawLookup)) {
+    return 'Vệ Sinh Giày';
+  }
+
+  if (/\b(shoe storage|storage box|organizer|organizers)\b/.test(rawLookup)) {
+    return 'Bảo Quản Giày';
+  }
+
+  if (/\b(decoration|decor|clock|clocks)\b/.test(rawLookup)) {
+    return 'Phụ Kiện Trang Trí';
+  }
+
+  if (
+    /\b(clean|cleaning|care|wash|ve sinh|ban chai|khan lau|dung dich|microfiber|kit cham soc)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Vệ Sinh Giày';
+  }
+
+  if (
+    /\b(storage|organizer|organizers|box|bag|bao quan|hop|tui dung|hut am|chong nhan|shoe storage|shoe box)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Bảo Quản Giày';
+  }
+
+  if (
+    /\b(day giay|shoelace|shoelaces|shoe lace|laces|day oval|day flat|day tron|reflective lace|custom lace)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Dây Giày';
+  }
+
+  if (
+    /\b(charm|tag|tip|khoa|phu kien|trang tri|decoration|clock|dong ho|lace tag|lacetag|accessory|accessories)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Phụ Kiện Trang Trí';
+  }
+
+  return 'Phụ Kiện Trang Trí';
+};
+
 const inferCategory = (row: CsvRow, name: string) => {
   const csvCategory = valueOf(row, ['category', 'category_name', 'category_shopee', 'collection', 'nganh_hang', 'danh_muc']);
-  if (csvCategory) return csvCategory;
-
-  const normalized = normalizeText(name);
-  if (normalized.includes('ao')) return 'Thời trang';
-  if (normalized.includes('tui') || normalized.includes('vi')) return 'Túi ví';
-  if (normalized.includes('giay') || normalized.includes('dep')) return 'Giày dép';
-  if (normalized.includes('phu kien') || normalized.includes('charm')) return 'Phụ kiện';
-  return 'Sản phẩm';
+  return brandCategoryFrom(csvCategory, name);
 };
 
 const variantName = (row: CsvRow) => {
