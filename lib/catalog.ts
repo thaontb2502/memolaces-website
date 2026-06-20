@@ -231,6 +231,38 @@ const inferCategory = (row: CsvRow, name: string) => {
   return brandCategoryFrom(csvCategory, name);
 };
 
+const inferLengths = (name: string, variants: ProductVariant[]) =>
+  unique(
+    [name, ...variants.flatMap((variant) => [variant.name, variant.sku])]
+      .join(' ')
+      .match(/\b(100|120|140|160|180)cm\b/gi)
+      ?.map((value) => value.toLowerCase()) ?? [],
+  ).sort((a, b) => parseInteger(a) - parseInteger(b));
+
+const inferStyleTags = (name: string, description: string, variants: ProductVariant[]) => {
+  const lookup = normalizeLookup([name, description, ...variants.flatMap((variant) => [variant.name, variant.sku])].join(' '));
+  const tags: string[] = [];
+  const addTag = (label: string, patterns: string[]) => {
+    if (patterns.some((pattern) => new RegExp(`\\b${pattern}\\b`).test(lookup))) tags.push(label);
+  };
+
+  addTag('flat', ['flat', 'det', 'day flat']);
+  addTag('oval', ['oval']);
+  addTag('rope', ['rope', 'tron', 'day tron']);
+  addTag('reflective', ['reflective', 'phan quang', 'da quang']);
+  addTag('waxed', ['waxed', 'sap']);
+  addTag('printed', ['printed', 'print', 'custom', 'in chu']);
+  addTag('shoelaces', ['shoelaces', 'shoe laces', 'offwhite']);
+  addTag('jordan', ['jordan', 'aj1', 'aj 1', 'air jordan']);
+  addTag('dunk', ['dunk', 'sb']);
+  addTag('yeezy', ['yeezy', '350']);
+  addTag('air-max', ['air max']);
+  addTag('mlb', ['mlb']);
+  addTag('converse-vans', ['converse', 'vans', '1970']);
+
+  return unique(tags);
+};
+
 const variantName = (row: CsvRow) => {
   const explicit = valueOf(row, ['variant_name', 'model_name', 'variation_name', 'ten_phan_loai']);
   const option1 = valueOf(row, ['option1_value', 'option_1_value', 'phan_loai_1', 'variation_1']);
@@ -412,6 +444,9 @@ const buildCatalog = (): CatalogData => {
             },
           ];
 
+    const description =
+      cleanDescription(valueOf(row, ['description', 'product_description', 'mo_ta'])) ||
+      'Sản phẩm đang được cập nhật mô tả.';
     const images = unique([
       ...productImages,
       ...normalizedVariants.map((variant) => variant.image).filter(Boolean),
@@ -422,9 +457,7 @@ const buildCatalog = (): CatalogData => {
       id,
       itemId: valueOf(row, ['item_id']),
       name,
-      description:
-        cleanDescription(valueOf(row, ['description', 'product_description', 'mo_ta'])) ||
-        'Sản phẩm đang được cập nhật mô tả.',
+      description,
       images,
       coverImage: images[0] || PLACEHOLDER_IMAGE,
       variants: normalizedVariants,
@@ -432,6 +465,8 @@ const buildCatalog = (): CatalogData => {
       maxPrice: prices.length ? Math.max(...prices) : 0,
       stock: normalizedVariants.reduce((sum, variant) => sum + variant.stock, 0),
       category: inferCategory(row, name),
+      lengths: inferLengths(name, normalizedVariants),
+      styleTags: inferStyleTags(name, description, normalizedVariants),
       sku: productSku || normalizedVariants[0]?.sku || id,
       isMissingImage: images.length === 0,
     };
@@ -461,7 +496,14 @@ export const getProductById = (id: string) =>
 
 export const getRelatedProducts = (product: Product, limit = 4) =>
   getCatalog()
-    .products.filter((item) => item.id !== product.id && item.category === product.category)
+    .products.filter((item) => item.id !== product.id)
+    .sort((a, b) => {
+      const score = (item: Product) =>
+        (item.category === product.category ? 4 : 0) +
+        item.styleTags.filter((tag) => product.styleTags.includes(tag)).length * 2 +
+        item.lengths.filter((length) => product.lengths.includes(length)).length;
+      return score(b) - score(a);
+    })
     .slice(0, limit);
 
 export const placeholderImage = PLACEHOLDER_IMAGE;

@@ -3,17 +3,16 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { Menu, Percent, Search, ShoppingBag, X } from 'lucide-react';
+import { ChevronDown, Menu, Search, ShoppingBag, X } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { siteConfig } from '@/lib/site-config';
 
 const navItems = [
-  { href: '/', label: 'Trang chủ' },
-  { href: '/products', label: 'Sản phẩm' },
+  { href: '/products', label: 'Tất cả sản phẩm' },
   { href: '/products?category=Dây%20Giày', label: 'Dây giày' },
   { href: '/products?category=Phụ%20Kiện%20Trang%20Trí', label: 'Phụ kiện' },
   { href: '/products?category=Vệ%20Sinh%20Giày', label: 'Vệ sinh' },
-  { href: '/products?category=Bảo%20Quản%20Giày', label: 'Bảo quản' },
+  { href: '/size-guide', label: 'Hướng dẫn chọn size' },
   { href: '/contact', label: 'Liên hệ' },
 ];
 
@@ -32,9 +31,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="border-b border-stone-100 bg-emerald-950 text-white">
-        <div className="container-page flex min-h-9 items-center justify-between gap-3 text-xs font-bold">
+        <div className="container-page flex min-h-9 items-center justify-center gap-3 text-center text-xs font-bold md:justify-between">
           <span className="hidden sm:block">{siteConfig.slogan}</span>
-          <span className="flex items-center gap-2"><Percent size={14} /> Freeship và ưu đãi theo chương trình shop</span>
+          <span>{siteConfig.announcement}</span>
           <span className="hidden md:block">Hotline: {siteConfig.phone}</span>
         </div>
       </div>
@@ -66,6 +65,30 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <div className="group relative">
+            <button type="button" className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold text-stone-600 hover:bg-emerald-50 hover:text-emerald-950">
+              Theo độ dài <ChevronDown size={15} />
+            </button>
+            <div className="invisible absolute left-0 top-full z-50 grid w-52 gap-1 rounded-lg border border-stone-200 bg-white p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100">
+              {siteConfig.lengths.map((item) => (
+                <Link key={item.label} href={item.href} className="rounded-md px-3 py-2 text-sm font-bold text-stone-700 hover:bg-emerald-50 hover:text-emerald-950">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="group relative">
+            <button type="button" className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold text-stone-600 hover:bg-emerald-50 hover:text-emerald-950">
+              Theo kiểu dây <ChevronDown size={15} />
+            </button>
+            <div className="invisible absolute right-0 top-full z-50 grid w-64 gap-1 rounded-lg border border-stone-200 bg-white p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100">
+              {siteConfig.laceTypes.map((item) => (
+                <Link key={item.label} href={item.href} className="rounded-md px-3 py-2 text-sm font-bold text-stone-700 hover:bg-emerald-50 hover:text-emerald-950">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <Link href="/cart" className="relative grid h-12 w-12 place-items-center rounded-lg border border-stone-200 bg-white text-emerald-950 shadow-sm transition hover:border-emerald-900 hover:bg-emerald-50" aria-label="Giỏ hàng">
@@ -94,6 +117,24 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+          </div>
+          <div className="mt-3 grid gap-3 rounded-lg bg-white p-3">
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Theo độ dài</p>
+            <div className="grid grid-cols-3 gap-2">
+              {siteConfig.lengths.map((item) => (
+                <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="rounded-md bg-stone-50 px-3 py-2 text-center text-sm font-bold text-stone-700">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Theo kiểu dây</p>
+            <div className="grid gap-2">
+              {siteConfig.laceTypes.slice(0, 6).map((item) => (
+                <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="rounded-md bg-stone-50 px-3 py-2 text-sm font-bold text-stone-700">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

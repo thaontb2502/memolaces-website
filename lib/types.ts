@@ -30,6 +30,8 @@ export type Product = {
   maxPrice: number;
   stock: number;
   category: string;
+  lengths: string[];
+  styleTags: string[];
   sku: string;
   isMissingImage: boolean;
 };
@@ -61,4 +63,4 @@ export type CartItem = {
   quantity: number;
 };
 
-export type SortOption = 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
+export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';

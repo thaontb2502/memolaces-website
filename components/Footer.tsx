@@ -26,6 +26,8 @@ export function Footer() {
           <h3 className="mb-3 text-sm font-black uppercase tracking-wide">Mua hàng</h3>
           <div className="grid gap-2 text-sm text-emerald-50/80">
             <Link href="/products">Tất cả sản phẩm</Link>
+            <Link href="/products?category=Dây%20Giày">Dây giày</Link>
+            <Link href="/size-guide">Hướng dẫn chọn size</Link>
             <Link href="/cart">Giỏ hàng</Link>
             <Link href="/checkout">Thanh toán</Link>
           </div>

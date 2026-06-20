@@ -1,6 +1,7 @@
 export const siteConfig = {
   shopName: 'MEMOLACES',
   slogan: 'More Than Shoelaces',
+  announcement: 'Freeship cho đơn từ 299K • Tư vấn chọn độ dài dây giày qua Zalo',
   tagline: 'Thay Dây Mới - Làm Mới Cả Đôi Giày',
   secondarySlogans: [
     'Thay Dây Mới - Làm Mới Cả Đôi Giày',
@@ -8,7 +9,7 @@ export const siteConfig = {
     'Nâng Tầm Đôi Giày Mỗi Ngày',
   ],
   shortDescription:
-    'Memolaces chuyên dây giày, phụ kiện trang trí, vệ sinh và bảo quản giày, giúp bạn làm mới và chăm sóc đôi giày mỗi ngày.',
+    'MEMOLACES chuyên dây giày, phụ kiện trang trí, vệ sinh và bảo quản giày. Khám phá nhiều lựa chọn màu sắc, kiểu dây và độ dài phù hợp với đôi giày của bạn.',
   description:
     'Memolaces xây dựng hệ sinh thái phụ kiện dành cho người yêu giày, từ dây giày, phụ kiện custom đến giải pháp vệ sinh và bảo quản.',
   categories: [
@@ -43,6 +44,31 @@ export const siteConfig = {
       description: 'Giải pháp cất giữ, bảo vệ form và kéo dài tuổi thọ đôi giày.',
       children: ['Túi đựng giày', 'Hộp bảo quản', 'Gói hút ẩm', 'Phụ kiện chống nhăn'],
     },
+  ],
+  laceTypes: [
+    { label: 'Dây flat', href: '/products?style=flat' },
+    { label: 'Dây oval', href: '/products?style=oval' },
+    { label: 'Dây rope/tròn', href: '/products?style=rope' },
+    { label: 'Dây phản quang', href: '/products?style=reflective' },
+    { label: 'Dây waxed', href: '/products?style=waxed' },
+    { label: 'Dây printed/custom', href: '/products?style=printed' },
+    { label: 'Dây theo mẫu giày', href: '/products?category=Dây%20Giày' },
+  ],
+  lengths: [
+    { label: '100cm', href: '/products?length=100cm', text: 'Giày thấp/cổ thấp, ít lỗ xỏ' },
+    { label: '120cm', href: '/products?length=120cm', text: 'Giày phổ thông' },
+    { label: '140cm', href: '/products?length=140cm', text: 'Sneaker nhiều lỗ xỏ' },
+    { label: '160cm', href: '/products?length=160cm', text: 'Cổ cao hoặc buộc dài' },
+    { label: '180cm', href: '/products?length=180cm', text: 'Boots/cổ cao/dây dài' },
+  ],
+  styles: [
+    { label: 'OFFWHITE “SHOELACES”', value: 'shoelaces', href: '/products?style=shoelaces' },
+    { label: 'Jordan', value: 'jordan', href: '/products?style=jordan' },
+    { label: 'Dunk/SB', value: 'dunk', href: '/products?style=dunk' },
+    { label: 'Yeezy/350', value: 'yeezy', href: '/products?style=yeezy' },
+    { label: 'Air Max', value: 'air-max', href: '/products?style=air-max' },
+    { label: 'MLB', value: 'mlb', href: '/products?style=mlb' },
+    { label: 'Converse/Vans', value: 'converse-vans', href: '/products?style=converse-vans' },
   ],
   reasonsToChoose: [
     'Nhiều lựa chọn màu sắc và kích thước',

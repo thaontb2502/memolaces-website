@@ -12,6 +12,13 @@ const commitments = [
   { icon: CreditCard, title: 'Thanh toán an toàn', text: 'Tóm tắt đơn rõ ràng, sẵn sàng tích hợp thanh toán online.' },
 ];
 
+const featuredCollections = [
+  { title: 'Dây giày', text: 'Dây thay thế theo màu, kiểu và độ dài.', href: '/products?category=Dây%20Giày' },
+  { title: 'Dây theo độ dài', text: 'Tìm nhanh 100cm, 120cm, 140cm, 160cm, 180cm.', href: '/products?length=160cm' },
+  { title: 'Phụ kiện trang trí', text: 'Charm, tag, tip và chi tiết custom.', href: '/products?category=Phụ%20Kiện%20Trang%20Trí' },
+  { title: 'Vệ sinh & bảo quản', text: 'Chăm sóc, làm sạch và giữ form giày.', href: '/products?category=Vệ%20Sinh%20Giày' },
+];
+
 export default function HomePage() {
   const { products, report } = getCatalog();
   const featuredProducts = products.filter((product) => product.stock > 0).slice(0, 8);
@@ -28,17 +35,17 @@ export default function HomePage() {
               {siteConfig.shopName} · {siteConfig.slogan}
             </span>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight text-emerald-950 md:text-6xl">
-              {siteConfig.slogan}
+              {siteConfig.shopName} - {siteConfig.slogan}
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              {siteConfig.shortDescription}
+              Thay dây mới, làm mới cả đôi giày.
             </p>
-            <p className="mt-4 text-base font-black text-emerald-800">{siteConfig.secondarySlogans[1]}</p>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{siteConfig.shortDescription}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/products" className="inline-flex items-center gap-2 rounded-lg bg-emerald-900 px-6 py-3 text-sm font-black text-white shadow-lg hover:bg-emerald-800">
                 Mua ngay <ArrowRight size={18} />
               </Link>
-              <Link href="#categories" className="rounded-lg border border-stone-200 bg-white px-6 py-3 text-sm font-black text-emerald-950 hover:bg-emerald-50">Xem danh mục</Link>
+              <Link href="/size-guide" className="rounded-lg border border-stone-200 bg-white px-6 py-3 text-sm font-black text-emerald-950 hover:bg-emerald-50">Xem hướng dẫn chọn size</Link>
             </div>
             <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
               <div className="rounded-lg bg-white p-4 shadow-sm">
@@ -122,6 +129,22 @@ export default function HomePage() {
       </section>
 
       <section className="container-page pb-12">
+        <div className="mb-5">
+          <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Bộ sưu tập</span>
+          <h2 className="mt-1 text-3xl font-black text-emerald-950">Mua theo nhu cầu</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          {featuredCollections.map((item) => (
+            <Link key={item.title} href={item.href} className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50">
+              <h3 className="text-lg font-black text-emerald-950">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
+              <span className="mt-4 inline-flex items-center gap-2 text-sm font-black text-emerald-800">Xem sản phẩm <ArrowRight size={16} /></span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container-page pb-12">
         <div className="rounded-lg border border-stone-200 bg-emerald-950 p-6 text-white shadow-lg md:p-8">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -148,10 +171,54 @@ export default function HomePage() {
 
       <section className="container-page pb-12">
         <div className="mb-5">
+          <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Shop by Style</span>
+          <h2 className="mt-1 text-3xl font-black text-emerald-950">Chọn theo mẫu giày và kiểu dây</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[...siteConfig.laceTypes.slice(0, 6), ...siteConfig.styles.slice(0, 6)].slice(0, 8).map((item) => (
+            <Link key={item.label} href={item.href} className="rounded-lg border border-stone-200 bg-white px-4 py-4 text-sm font-black text-emerald-950 shadow-sm hover:border-emerald-200 hover:bg-emerald-50">
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container-page pb-12">
+        <div className="mb-5">
+          <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Shop by Length</span>
+          <h2 className="mt-1 text-3xl font-black text-emerald-950">Chọn nhanh theo độ dài</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {siteConfig.lengths.map((item) => (
+            <Link key={item.label} href={item.href} className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm hover:border-emerald-200 hover:bg-emerald-50">
+              <p className="text-2xl font-black text-emerald-950">{item.label}</p>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container-page pb-12">
+        <div className="mb-5">
           <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Đang bán</span>
           <h2 className="mt-1 text-3xl font-black text-emerald-950">Sản phẩm nổi bật</h2>
         </div>
         {featuredProducts.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <EmptyState title="Chưa có sản phẩm nổi bật" description="Các sản phẩm còn hàng sẽ xuất hiện ở đây khi có dữ liệu CSV." />}
+      </section>
+
+      <section className="container-page pb-12">
+        <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm md:p-8">
+          <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Hướng dẫn chọn size</span>
+              <h2 className="mt-1 text-3xl font-black text-emerald-950">Chưa chắc nên chọn dây dài bao nhiêu?</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-stone-600">Dùng bảng gợi ý theo số lỗ xỏ và dáng giày, hoặc nhắn Zalo để MEMOLACES tư vấn theo mẫu giày cụ thể.</p>
+            </div>
+            <Link href="/size-guide" className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-900 px-5 py-3 text-sm font-black text-white">
+              Xem size guide <ArrowRight size={17} />
+            </Link>
+          </div>
+        </div>
       </section>
 
       <section className="container-page pb-12">
