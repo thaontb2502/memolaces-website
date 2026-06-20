@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="960" viewBox="0 0 960 960" role="img" aria-label="Ảnh sản phẩm đang cập nhật">
+  <rect width="960" height="960" fill="#f2eee7"/>
+  <rect x="120" y="160" width="720" height="640" rx="28" fill="#ffffff" stroke="#d8d0c5" stroke-width="8"/>
+  <circle cx="340" cy="360" r="78" fill="#c85f48"/>
+  <path d="M180 720 390 505c18-18 47-18 65 0l86 86 67-72c18-19 49-20 68-1l104 102v100H180Z" fill="#28736d"/>
+  <text x="480" y="850" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#49524e">Đang cập nhật ảnh</text>
+</svg>
