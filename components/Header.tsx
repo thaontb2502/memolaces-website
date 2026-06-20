@@ -38,12 +38,14 @@ export function Header() {
         </div>
       </div>
       <div className="container-page flex min-h-20 items-center gap-4">
-        <Link href="/" className="flex min-w-fit items-center gap-3 text-lg font-black text-emerald-950" aria-label="Trang chủ">
-          <span className="grid h-12 w-12 place-items-center rounded-lg bg-emerald-900 text-white shadow-sm">M</span>
-          <span className="hidden leading-tight sm:block">
-            {siteConfig.shopName}
-            <small className="block text-xs font-bold text-stone-500">{siteConfig.slogan}</small>
-          </span>
+        <Link href="/" className="flex min-w-fit items-center gap-3" aria-label={`${siteConfig.shopName} - Trang chủ`}>
+          <img
+            src="/images/brand/memolaces-logo.png"
+            alt={siteConfig.shopName}
+            title={siteConfig.shopName}
+            className="h-10 w-36 object-contain sm:h-12 sm:w-44"
+          />
+          <span className="sr-only">{siteConfig.shopName}</span>
         </Link>
 
         <form onSubmit={submit} className="hidden h-12 flex-1 items-center rounded-lg border-2 border-emerald-900 bg-white px-3 shadow-sm md:flex">

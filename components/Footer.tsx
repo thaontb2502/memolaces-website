@@ -8,8 +8,14 @@ export function Footer() {
       <div className="container-page grid gap-8 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <div className="mb-4 flex items-center gap-3 text-lg font-black">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-white text-emerald-950">M</span>
-            {siteConfig.shopName}
+            <span className="inline-flex rounded-lg bg-white p-2 shadow-sm">
+              <img
+                src="/images/brand/memolaces-logo.png"
+                alt={siteConfig.shopName}
+                title={siteConfig.shopName}
+                className="h-10 w-36 object-contain"
+              />
+            </span>
           </div>
           <p className="mb-3 text-sm font-black text-emerald-100">{siteConfig.slogan}</p>
           <p className="max-w-sm text-sm leading-6 text-emerald-50/80">
