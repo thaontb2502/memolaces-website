@@ -8,3 +8,7 @@ dist
 .env.*.local
 *.tsbuildinfo
 *.log
+ARCHIVE/
+MEMO_IMAGE_SKILL/
+MEMO_IMAGE_SKILL_FINAL.md
+MEMO_IMAGE_SKILL_ULTRA.md

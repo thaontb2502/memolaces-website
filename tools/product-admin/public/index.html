@@ -126,7 +126,7 @@
 
       .toolbar {
         display: grid;
-        grid-template-columns: minmax(220px, 360px) 190px auto auto;
+        grid-template-columns: minmax(220px, 340px) 180px auto auto auto;
         gap: 10px;
         align-items: center;
       }
@@ -210,6 +210,77 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
+      }
+
+      .action-grid,
+      .dashboard-grid,
+      .bulk-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 22px;
+        line-height: 1.1;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .dropzone {
+        display: grid;
+        min-height: 112px;
+        place-items: center;
+        border: 1.5px dashed #a8b9ad;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--muted);
+        text-align: center;
+        padding: 14px;
+      }
+
+      .dropzone.dragging {
+        border-color: var(--brand);
+        background: #edf7f1;
+        color: var(--brand-dark);
+      }
+
+      .checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .check-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .check-pill input,
+      .row-check,
+      #selectAllVisible {
+        width: auto;
+        min-height: auto;
       }
 
       .field.full {
@@ -381,6 +452,8 @@
           </select>
           <button id="newProduct">Thêm sản phẩm</button>
           <button id="runCheck">Kiểm tra dữ liệu</button>
+          <button id="runBuild">Build</button>
+          <button id="runDeploy">Deploy CF</button>
         </div>
       </div>
     </header>
@@ -391,9 +464,11 @@
           <table>
             <thead>
               <tr>
+                <th><input id="selectAllVisible" type="checkbox" title="Chọn tất cả đang lọc" /></th>
                 <th>product_id</th>
                 <th>Tên sản phẩm</th>
                 <th>Danh mục</th>
+                <th>Trạng thái</th>
                 <th class="number">Giá</th>
                 <th class="number">Tồn</th>
                 <th class="number">Ảnh</th>
@@ -402,7 +477,7 @@
             </thead>
             <tbody id="productRows">
               <tr>
-                <td colspan="7" class="empty">Đang đọc CSV...</td>
+                <td colspan="9" class="empty">Đang đọc CSV...</td>
               </tr>
             </tbody>
           </table>
@@ -411,6 +486,41 @@
 
       <section class="editor-pane">
         <div class="pane-pad">
+          <div class="section">
+            <div class="section-head">
+              <h2>Dashboard dữ liệu</h2>
+              <button id="refreshDashboard" type="button">Làm mới</button>
+            </div>
+            <div id="dashboard" class="dashboard-grid"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h2>Thao tác nhanh</h2>
+            </div>
+            <div class="action-grid">
+              <button id="quickCheck" type="button">Chạy check</button>
+              <button id="quickBuild" type="button">Build static</button>
+              <button id="quickDeploy" type="button">Deploy Cloudflare</button>
+              <select id="backupSelect"></select>
+              <button id="restoreBackup" type="button" class="danger">Khôi phục backup</button>
+            </div>
+            <pre id="taskOutput" hidden></pre>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h2>Sửa giá/tồn kho hàng loạt</h2>
+              <span id="selectedCount" class="pill">0 sản phẩm đã chọn</span>
+            </div>
+            <div class="bulk-grid">
+              <input id="bulkPrice" type="number" min="1" step="1000" placeholder="Giá mới" />
+              <input id="bulkStock" type="number" min="0" step="1" placeholder="Tồn kho mới" />
+              <button id="bulkSelected" type="button">Áp dụng sản phẩm chọn</button>
+              <button id="bulkCurrent" type="button">Áp dụng sản phẩm đang mở</button>
+            </div>
+          </div>
+
           <form id="editor">
             <div class="section">
               <div class="section-head">
@@ -432,6 +542,10 @@
                 <div class="field">
                   <label for="parentSku">SKU cha</label>
                   <input id="parentSku" />
+                </div>
+                <div class="field full">
+                  <label>Trạng thái sản phẩm</label>
+                  <div id="statusChecks" class="checks"></div>
                 </div>
                 <div class="field full">
                   <label for="description">Mô tả</label>
@@ -456,6 +570,12 @@
                 </div>
               </div>
               <p class="hint">Gỡ ảnh ở đây chỉ xoá khỏi CSV. File ảnh vật lý vẫn giữ trong thư mục sản phẩm.</p>
+              <div id="dropzone" class="dropzone">
+                <div>
+                  <strong>Kéo-thả ảnh vào đây</strong>
+                  <div class="hint">Ảnh sẽ được copy vào thư mục sản phẩm và thêm vào gallery CSV.</div>
+                </div>
+              </div>
               <div id="imageGrid" class="image-grid"></div>
             </div>
 
@@ -492,10 +612,14 @@
 
     <script>
       const categories = ['Dây Giày', 'Phụ Kiện Trang Trí', 'Vệ Sinh Giày', 'Bảo Quản Giày'];
+      const productStatuses = ['active', 'hidden', 'out_stock', 'featured', 'new', 'sale'];
       const state = {
         products: [],
+        filteredProducts: [],
+        selectedIds: new Set(),
         selectedId: '',
         detail: null,
+        report: null,
       };
 
       const $ = (id) => document.getElementById(id);
@@ -520,6 +644,9 @@
           $('categoryFilter').insertAdjacentHTML('beforeend', `<option value="${category}">${category}</option>`);
           $('category').insertAdjacentHTML('beforeend', `<option value="${category}">${category}</option>`);
         }
+        $('statusChecks').innerHTML = productStatuses
+          .map((status) => `<label class="check-pill"><input type="checkbox" value="${status}" data-status-check />${status}</label>`)
+          .join('');
       };
 
       const loadProducts = async () => {
@@ -536,15 +663,20 @@
           const haystack = [product.product_id, product.product_name, ...(product.skus || [])].join(' ').toLowerCase();
           return (!query || haystack.includes(query)) && (category === 'all' || product.category === category);
         });
+        state.filteredProducts = products;
+        $('selectAllVisible').checked = products.length > 0 && products.every((product) => state.selectedIds.has(product.product_id));
+        renderSelectedCount();
 
         $('productRows').innerHTML =
           products
             .map(
               (product) => `
                 <tr class="product-row ${product.product_id === state.selectedId ? 'active' : ''}" data-id="${product.product_id}">
+                  <td><input class="row-check" type="checkbox" data-check-id="${product.product_id}" ${state.selectedIds.has(product.product_id) ? 'checked' : ''} /></td>
                   <td class="id">${escapeHtml(product.product_id)}</td>
                   <td class="name">${escapeHtml(product.product_name)}</td>
                   <td>${escapeHtml(product.category)}</td>
+                  <td>${(product.status || []).map((status) => `<span class="pill">${escapeHtml(status)}</span>`).join(' ')}</td>
                   <td class="number">${money(product.price_min_vnd)}${product.price_min_vnd !== product.price_max_vnd ? '<br>' + money(product.price_max_vnd) : ''}</td>
                   <td class="number">${product.total_stock}</td>
                   <td class="number">${product.image_count}</td>
@@ -552,10 +684,17 @@
                 </tr>
               `,
             )
-            .join('') || '<tr><td colspan="7" class="empty">Không có sản phẩm phù hợp</td></tr>';
+            .join('') || '<tr><td colspan="9" class="empty">Không có sản phẩm phù hợp</td></tr>';
 
         document.querySelectorAll('.product-row').forEach((row) => {
           row.addEventListener('click', () => loadProduct(row.dataset.id));
+        });
+        document.querySelectorAll('.row-check').forEach((checkbox) => {
+          checkbox.addEventListener('click', (event) => {
+            event.stopPropagation();
+            checkbox.checked ? state.selectedIds.add(checkbox.dataset.checkId) : state.selectedIds.delete(checkbox.dataset.checkId);
+            renderProducts();
+          });
         });
       };
 
@@ -587,6 +726,7 @@
           description: '',
           category: 'Dây Giày',
           parent_sku: '',
+          status: ['active'],
           cover_image: '',
           gallery_images: [],
           image_rows: [],
@@ -615,6 +755,9 @@
         $('category').value = categories.includes(detail.category) ? detail.category : 'Phụ Kiện Trang Trí';
         $('parentSku').value = detail.parent_sku || '';
         $('description').value = detail.description || '';
+        document.querySelectorAll('[data-status-check]').forEach((input) => {
+          input.checked = (detail.status || ['active']).includes(input.value);
+        });
         $('coverLabel').textContent = detail.cover_image ? `Cover: ${detail.cover_image.split('/').pop()}` : 'Cover chưa chọn';
         renderImages();
         renderVariants();
@@ -729,6 +872,7 @@
         description: $('description').value,
         category: $('category').value,
         parent_sku: $('parentSku').value.trim(),
+        status: [...document.querySelectorAll('[data-status-check]:checked')].map((input) => input.value),
         cover_image: state.detail.cover_image || '',
         gallery_images: state.detail.gallery_images || [],
         variants: state.detail.variants || [],
@@ -770,6 +914,125 @@
         return [...duplicates];
       };
 
+      const renderSelectedCount = () => {
+        $('selectedCount').textContent = `${state.selectedIds.size} sản phẩm đã chọn`;
+      };
+
+      const renderDashboard = () => {
+        const report = state.report;
+        const metrics = [
+          ['Thiếu ảnh', report?.missingImageProducts?.length ?? 0],
+          ['Thiếu giá', report?.variantMissingPrice?.length ?? 0],
+          ['Thiếu SKU', report?.variantMissingSku?.length ?? 0],
+          ['SKU trùng', report?.duplicateSkus?.length ?? 0],
+          ['Tồn kho 0', report?.variantOutOfStock?.length ?? 0],
+          ['Ảnh mất file', report?.imagesMissingFile?.length ?? 0],
+        ];
+        $('dashboard').innerHTML = metrics
+          .map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`)
+          .join('');
+      };
+
+      const refreshDashboard = async () => {
+        const response = await fetch('/api/check');
+        const data = await response.json();
+        state.report = data.report;
+        $('checkOutput').hidden = false;
+        $('checkOutput').textContent = data.text;
+        renderDashboard();
+      };
+
+      const runTask = async (task) => {
+        setStatus(`Đang chạy ${task}...`);
+        $('taskOutput').hidden = false;
+        $('taskOutput').textContent = 'Đang chạy, vui lòng chờ...';
+        const response = await fetch(`/api/tasks/${task}`, { method: 'POST' });
+        const result = await response.json();
+        $('taskOutput').textContent = result.output || '';
+        setStatus(response.ok ? `${task} hoàn tất.` : `${task} lỗi, xem log bên dưới.`, response.ok ? 'ok' : 'error');
+        if (task === 'check') await refreshDashboard();
+      };
+
+      const loadBackups = async () => {
+        const response = await fetch('/api/backups');
+        const data = await response.json();
+        $('backupSelect').innerHTML =
+          (data.backups || [])
+            .map((backup) => `<option value="${backup.stamp}" ${backup.complete ? '' : 'disabled'}>${backup.stamp}${backup.complete ? '' : ' (thiếu file)'}</option>`)
+            .join('') || '<option value="">Chưa có backup</option>';
+      };
+
+      const restoreSelectedBackup = async () => {
+        const stamp = $('backupSelect').value;
+        if (!stamp) return;
+        if (!confirm(`Khôi phục CSV từ backup ${stamp}? Tool sẽ backup trạng thái hiện tại trước.`)) return;
+        setStatus('Đang khôi phục backup...');
+        const response = await fetch(`/api/backups/${encodeURIComponent(stamp)}/restore`, { method: 'POST' });
+        const result = await response.json();
+        if (!response.ok) {
+          setStatus((result.errors || ['Không khôi phục được backup.']).join(' '), 'error');
+          return;
+        }
+        state.selectedIds.clear();
+        await loadProducts();
+        await refreshDashboard();
+        await loadBackups();
+        setStatus(`Đã khôi phục backup ${result.restoredStamp}.`, 'ok');
+      };
+
+      const applyBulkUpdate = async (ids) => {
+        if (!ids.length) {
+          setStatus('Chưa có sản phẩm để sửa hàng loạt.', 'error');
+          return;
+        }
+        const payload = {
+          productIds: ids,
+          price: $('bulkPrice').value,
+          stock: $('bulkStock').value,
+        };
+        setStatus('Đang sửa giá/tồn kho hàng loạt...');
+        const response = await fetch('/api/bulk/variants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          setStatus((result.errors || ['Không sửa hàng loạt được.']).join(' '), 'error');
+          return;
+        }
+        await loadProducts();
+        if (state.selectedId) await loadProduct(state.selectedId);
+        await refreshDashboard();
+        await loadBackups();
+        setStatus(`Đã cập nhật ${result.changedVariants} phân loại trong ${result.productCount} sản phẩm.`, 'ok');
+      };
+
+      const uploadDroppedImages = async (files) => {
+        if (!state.detail?.product_id) {
+          setStatus('Hãy mở sản phẩm đã lưu trước khi kéo-thả ảnh.', 'error');
+          return;
+        }
+        if (!files.length) return;
+        const data = new FormData();
+        [...files].forEach((file) => data.append('images', file));
+        data.append('imageType', 'gallery');
+        setStatus('Đang upload ảnh vào thư mục sản phẩm...');
+        const response = await fetch(`/api/products/${encodeURIComponent(state.detail.product_id)}/images`, {
+          method: 'POST',
+          body: data,
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          setStatus((result.errors || ['Không upload được ảnh.']).join(' '), 'error');
+          return;
+        }
+        await loadProducts();
+        await loadProduct(state.detail.product_id);
+        await loadBackups();
+        setStatus(`Đã thêm ${result.localPaths.length} ảnh vào gallery.`, 'ok');
+      };
+
       const save = async (event) => {
         event.preventDefault();
         if (!state.detail) return;
@@ -800,12 +1063,20 @@
         setStatus(`Đã lưu. Backup mới: ${result.backups.length} file.`, 'ok');
         await loadProducts();
         await loadProduct(result.productId);
+        await refreshDashboard();
+        await loadBackups();
       };
 
       const firstOption = (value) => String(value || '').split(',')[0].split('/')[0].trim();
 
       $('search').addEventListener('input', renderProducts);
       $('categoryFilter').addEventListener('change', renderProducts);
+      $('selectAllVisible').addEventListener('change', () => {
+        for (const product of state.filteredProducts) {
+          $('selectAllVisible').checked ? state.selectedIds.add(product.product_id) : state.selectedIds.delete(product.product_id);
+        }
+        renderProducts();
+      });
       $('newProduct').addEventListener('click', newProduct);
       $('addVariant').addEventListener('click', () => {
         const usedSkus = new Set([...(state.detail.variants || []).map((variant) => variant.variation_sku).filter(Boolean), ...existingSkusOutsideCurrentProduct()]);
@@ -814,17 +1085,36 @@
         renderVariants();
       });
       $('editor').addEventListener('submit', save);
-      $('runCheck').addEventListener('click', async () => {
-        setStatus('Đang kiểm tra dữ liệu...');
-        const response = await fetch('/api/check');
-        const data = await response.json();
-        $('checkOutput').hidden = false;
-        $('checkOutput').textContent = data.text;
-        setStatus('Đã chạy kiểm tra dữ liệu.', 'ok');
+      $('runCheck').addEventListener('click', () => runTask('check'));
+      $('quickCheck').addEventListener('click', () => runTask('check'));
+      $('runBuild').addEventListener('click', () => runTask('build'));
+      $('quickBuild').addEventListener('click', () => runTask('build'));
+      $('runDeploy').addEventListener('click', () => {
+        if (confirm('Deploy lên Cloudflare Pages bằng npm run deploy:cf?')) runTask('deploy');
+      });
+      $('quickDeploy').addEventListener('click', () => {
+        if (confirm('Deploy lên Cloudflare Pages bằng npm run deploy:cf?')) runTask('deploy');
+      });
+      $('refreshDashboard').addEventListener('click', refreshDashboard);
+      $('restoreBackup').addEventListener('click', restoreSelectedBackup);
+      $('bulkSelected').addEventListener('click', () => applyBulkUpdate([...state.selectedIds]));
+      $('bulkCurrent').addEventListener('click', () => applyBulkUpdate(state.detail?.product_id ? [state.detail.product_id] : []));
+
+      const dropzone = $('dropzone');
+      dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('dragging');
+      });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+      dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('dragging');
+        uploadDroppedImages(event.dataTransfer.files);
       });
 
       fillCategories();
-      loadProducts().catch((error) => setStatus(error.message, 'error'));
+      renderDashboard();
+      Promise.all([loadProducts(), refreshDashboard(), loadBackups()]).catch((error) => setStatus(error.message, 'error'));
     </script>
   </body>
 </html>

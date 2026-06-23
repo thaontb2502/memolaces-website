@@ -2,12 +2,17 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
 import {
   ROOT,
+  addProductImages,
   buildCheckReport,
+  bulkUpdateVariants,
   formatCheckReport,
   getProductDetail,
+  listBackups,
   listProducts,
+  restoreBackup,
   saveProduct,
 } from './product-data.js';
 
@@ -56,6 +61,65 @@ app.get('/api/check', (_request, response) => {
   response.json({ report, text: formatCheckReport(report) });
 });
 
+app.post('/api/tasks/:task', async (request, response) => {
+  const commands = {
+    check: ['npm', ['run', 'products:check']],
+    build: ['npm', ['run', 'build']],
+    deploy: ['npm', ['run', 'deploy:cf']],
+  };
+  const command = commands[request.params.task];
+  if (!command) {
+    response.status(404).json({ errors: ['Lệnh không hợp lệ.'] });
+    return;
+  }
+
+  try {
+    const result = await runCommand(command[0], command[1]);
+    response.status(result.code === 0 ? 200 : 500).json(result);
+  } catch (error) {
+    response.status(500).json({ code: 1, output: error.message || 'Không chạy được lệnh.' });
+  }
+});
+
+app.post('/api/bulk/variants', (request, response) => {
+  const result = bulkUpdateVariants(request.body || {});
+  if (!result.ok) {
+    response.status(result.status || 400).json({ errors: result.errors || ['Không sửa hàng loạt được.'] });
+    return;
+  }
+  response.json(result);
+});
+
+app.post('/api/products/:id/images', upload.array('images', 40), (request, response) => {
+  const result = addProductImages({
+    productId: request.params.id,
+    files: request.files || [],
+    imageType: request.body.imageType || 'gallery',
+    optionName: request.body.optionName || '',
+  });
+
+  if (!result.ok) {
+    cleanupFiles(request.files || []);
+    response.status(result.status || 400).json({ errors: result.errors || ['Không thêm được ảnh.'] });
+    return;
+  }
+
+  response.json(result);
+});
+
+app.get('/api/backups', (_request, response) => {
+  response.json({ backups: listBackups() });
+});
+
+app.post('/api/backups/:stamp/restore', (request, response) => {
+  const result = restoreBackup(request.params.stamp);
+  if (!result.ok) {
+    response.status(result.status || 400).json({ errors: result.errors || ['Không khôi phục được backup.'] });
+    return;
+  }
+  response.json(result);
+});
+
 const handleSave = (request, response, productId = '') => {
   let payload;
   try {
@@ -79,7 +143,24 @@ const cleanupFiles = (files) => {
   for (const file of files) fs.rmSync(file.path, { force: true });
 };
 
+const runCommand = (command, args) =>
+  new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd: ROOT,
+      env: process.env,
+      shell: false,
+    });
+    let output = '';
+    const append = (data) => {
+      output += data.toString();
+      if (output.length > 60000) output = output.slice(-60000);
+    };
+    child.stdout.on('data', append);
+    child.stderr.on('data', append);
+    child.on('error', (error) => resolve({ code: 1, output: error.message }));
+    child.on('close', (code) => resolve({ code, output }));
+  });
+
 app.listen(PORT, () => {
   console.log(`MEMOLACES product admin đang chạy tại http://localhost:${PORT}`);
 });
-
