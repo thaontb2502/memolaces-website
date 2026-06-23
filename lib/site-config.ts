@@ -89,4 +89,11 @@ export const siteConfig = {
   canonicalDomain: 'https://memolaces.com',
   ogImage: '/images/og-memolaces.jpg',
   primaryColor: '#0f766e',
+  returnDays: 7,
+  returnFees: 'FreeReturn',
+  shippingFee: 30000,
+  handlingMinDays: 1,
+  handlingMaxDays: 2,
+  transitMinDays: 2,
+  transitMaxDays: 5,
 };

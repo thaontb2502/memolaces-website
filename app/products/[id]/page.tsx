@@ -43,10 +43,61 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const relatedProducts = getRelatedProducts(product);
   const validVariants = product.variants.filter((variant) => variant.price > 0);
+  const lowPrice = validVariants.length > 0 ? Math.min(...validVariants.map((variant) => variant.price)) : 0;
+  const highPrice = validVariants.length > 0 ? Math.max(...validVariants.map((variant) => variant.price)) : 0;
   const productUrl = `${siteConfig.canonicalDomain}/products/${product.id}`;
   const imageUrls = product.images
     .filter((image) => image.startsWith('/') && !image.includes('cf.shopee.vn'))
     .map((image) => `${siteConfig.canonicalDomain}${image}`);
+  const shippingDetails = {
+    '@type': 'OfferShippingDetails',
+    shippingDestination: {
+      '@type': 'DefinedRegion',
+      addressCountry: 'VN',
+    },
+    deliveryTime: {
+      '@type': 'ShippingDeliveryTime',
+      handlingTime: {
+        '@type': 'QuantitativeValue',
+        minValue: siteConfig.handlingMinDays,
+        maxValue: siteConfig.handlingMaxDays,
+        unitCode: 'DAY',
+      },
+      transitTime: {
+        '@type': 'QuantitativeValue',
+        minValue: siteConfig.transitMinDays,
+        maxValue: siteConfig.transitMaxDays,
+        unitCode: 'DAY',
+      },
+    },
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      value: siteConfig.shippingFee,
+      currency: 'VND',
+    },
+  };
+  const merchantReturnPolicy = {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'VN',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: siteConfig.returnDays,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: `https://schema.org/${siteConfig.returnFees}`,
+  };
+  const aggregateOffer =
+    lowPrice > 0
+      ? {
+          '@type': 'AggregateOffer',
+          priceCurrency: 'VND',
+          lowPrice,
+          highPrice,
+          offerCount: validVariants.length,
+          availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          url: productUrl,
+          hasMerchantReturnPolicy: merchantReturnPolicy,
+          shippingDetails,
+        }
+      : null;
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -59,19 +110,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       name: siteConfig.shopName,
     },
     url: productUrl,
-    ...(validVariants.length > 0
-      ? {
-          offers: {
-            '@type': 'AggregateOffer',
-            priceCurrency: 'VND',
-            lowPrice: Math.min(...validVariants.map((variant) => variant.price)),
-            highPrice: Math.max(...validVariants.map((variant) => variant.price)),
-            offerCount: validVariants.length,
-            availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: productUrl,
-          },
-        }
-      : {}),
+    ...(aggregateOffer ? { offers: aggregateOffer } : {}),
   };
 
   return (
