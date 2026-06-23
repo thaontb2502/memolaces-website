@@ -175,7 +175,7 @@ export function ProductsPageClient({
         />
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-600 shadow-sm">
           <span className="font-bold text-emerald-950">Hiển thị {shown.length} / {filtered.length} sản phẩm</span>
-          <span>{products.length} sản phẩm trong dữ liệu CSV</span>
+          <span>{products.length} sản phẩm trong cửa hàng</span>
         </div>
         <ProductGrid products={shown} />
         {visible < filtered.length && (

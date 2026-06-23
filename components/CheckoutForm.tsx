@@ -134,7 +134,7 @@ export function CheckoutForm() {
             <h1 className="mt-4 text-3xl font-black text-emerald-950">Đặt hàng thành công</h1>
             <p className="mt-3 text-stone-600">Mã đơn:</p>
             <p className="mx-auto mt-3 w-fit rounded-lg bg-emerald-50 px-5 py-3 font-mono text-lg font-black text-emerald-900">{success}</p>
-            <p className="mt-3 text-sm text-stone-500">Đơn đã được lưu trong localStorage.</p>
+            <p className="mt-3 text-sm text-stone-500">Thông tin đơn hàng đã được ghi nhận trên thiết bị này.</p>
             <p className="mt-2 text-sm font-bold text-emerald-800">Shop sẽ liên hệ xác nhận qua số điện thoại/Zalo trước khi giao hàng.</p>
           </div>
           <div className="mx-auto mt-6 max-w-3xl rounded-lg border border-stone-200 bg-stone-50 p-4">

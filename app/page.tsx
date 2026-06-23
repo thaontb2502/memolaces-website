@@ -20,7 +20,7 @@ const featuredCollections = [
 ];
 
 export default function HomePage() {
-  const { products, report } = getCatalog();
+  const { products } = getCatalog();
   const featuredProducts = products.filter((product) => product.stock > 0).slice(0, 8);
   const newestProducts = products.slice(-8).reverse();
   const heroProduct = products.find((product) => !product.isMissingImage) ?? products[0];
@@ -49,16 +49,16 @@ export default function HomePage() {
             </div>
             <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
               <div className="rounded-lg bg-white p-4 shadow-sm">
-                <p className="text-2xl font-black text-emerald-950">{report.productRows}</p>
-                <p className="text-xs font-bold text-stone-500">sản phẩm</p>
+                <p className="text-lg font-black text-emerald-950">Nhiều lựa chọn</p>
+                <p className="text-xs font-bold text-stone-500">màu sắc và kiểu dây</p>
               </div>
               <div className="rounded-lg bg-white p-4 shadow-sm">
-                <p className="text-2xl font-black text-emerald-950">{report.variantRows}</p>
-                <p className="text-xs font-bold text-stone-500">phân loại</p>
+                <p className="text-lg font-black text-emerald-950">Đủ độ dài</p>
+                <p className="text-xs font-bold text-stone-500">dễ chọn theo mẫu giày</p>
               </div>
               <div className="rounded-lg bg-white p-4 shadow-sm">
-                <p className="text-2xl font-black text-emerald-950">{report.imageRows}</p>
-                <p className="text-xs font-bold text-stone-500">ảnh local</p>
+                <p className="text-lg font-black text-emerald-950">Tư vấn nhanh</p>
+                <p className="text-xs font-bold text-stone-500">qua Zalo và hotline</p>
               </div>
             </div>
           </div>
@@ -72,39 +72,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="container-page py-12">
-        <div className="grid gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm md:grid-cols-4">
-          <div>
-            <p className="text-3xl font-black text-emerald-950">{report.productRows}</p>
-            <p className="text-sm text-stone-600">sản phẩm đọc được</p>
-          </div>
-          <div>
-            <p className="text-3xl font-black text-emerald-950">{report.variantRows}</p>
-            <p className="text-sm text-stone-600">phân loại đọc được</p>
-          </div>
-          <div>
-            <p className="text-3xl font-black text-emerald-950">{report.imageRows}</p>
-            <p className="text-sm text-stone-600">ảnh đọc được</p>
-          </div>
-          <div>
-            <p className="text-3xl font-black text-rose-700">{report.missingImageProductIds.length}</p>
-            <p className="text-sm text-stone-600">sản phẩm thiếu ảnh</p>
-          </div>
-        </div>
-        {report.missingFiles.length > 0 && (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-900">
-            Chưa tìm thấy file: {report.missingFiles.join(', ')}. Hãy đặt đúng tên file ở gốc project để website hiển thị dữ liệu thật.
-          </div>
-        )}
-        {report.missingImageProductIds.length > 0 && (
-          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-            Sản phẩm thiếu ảnh: {report.missingImageProductIds.slice(0, 20).join(', ')}
-            {report.missingImageProductIds.length > 20 ? '...' : ''}
-          </div>
-        )}
-      </section>
-
-      <section id="categories" className="container-page scroll-mt-28 pb-12">
+      <section id="categories" className="container-page scroll-mt-28 py-12">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Danh mục MEMOLACES</span>
@@ -203,7 +171,7 @@ export default function HomePage() {
           <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Đang bán</span>
           <h2 className="mt-1 text-3xl font-black text-emerald-950">Sản phẩm nổi bật</h2>
         </div>
-        {featuredProducts.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <EmptyState title="Chưa có sản phẩm nổi bật" description="Các sản phẩm còn hàng sẽ xuất hiện ở đây khi có dữ liệu CSV." />}
+        {featuredProducts.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <EmptyState title="Chưa có sản phẩm nổi bật" description="Các sản phẩm còn hàng sẽ sớm xuất hiện tại đây." />}
       </section>
 
       <section className="container-page pb-12">
@@ -226,7 +194,7 @@ export default function HomePage() {
           <span className="text-sm font-black uppercase tracking-wide text-emerald-700">Mới cập nhật</span>
           <h2 className="mt-1 text-3xl font-black text-emerald-950">Sản phẩm mới</h2>
         </div>
-        {newestProducts.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{newestProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <EmptyState title="Chưa có sản phẩm mới" description="Danh sách này sẽ được tạo từ thứ tự sản phẩm trong CSV." />}
+        {newestProducts.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{newestProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <EmptyState title="Chưa có sản phẩm mới" description="Sản phẩm mới sẽ sớm xuất hiện tại đây." />}
       </section>
 
       <section className="bg-white py-12">

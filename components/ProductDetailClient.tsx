@@ -119,7 +119,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
         <div className="mt-6 grid gap-3 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-sm text-stone-700">
           <div className="flex gap-2"><Truck size={19} className="text-emerald-700" /> Giao hàng toàn quốc, đóng gói cẩn thận</div>
           <div className="flex gap-2"><CheckCircle2 size={19} className="text-emerald-700" /> Hỗ trợ đổi trả và kiểm tra hàng</div>
-          <div className="flex gap-2"><ShieldCheck size={19} className="text-emerald-700" /> Không dùng ảnh Shopee CDN, chỉ dùng ảnh local trong project</div>
+          <div className="flex gap-2"><ShieldCheck size={19} className="text-emerald-700" /> Hình ảnh sản phẩm sát thực tế, hỗ trợ tư vấn trước khi mua</div>
         </div>
       </div>
     </section>

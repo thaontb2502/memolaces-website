@@ -1,8 +1,12 @@
 import Link from 'next/link';
-import { Facebook, Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { siteConfig } from '@/lib/site-config';
 
 export function Footer() {
+  const hasEmail = Boolean(siteConfig.email && siteConfig.email !== 'email@example.com');
+  const hasFacebook = Boolean(siteConfig.facebook && siteConfig.facebook !== '#');
+  const hasTikTok = Boolean(siteConfig.tiktok && siteConfig.tiktok !== '#');
+
   return (
     <footer className="border-t border-stone-200 bg-emerald-950 text-white">
       <div className="container-page grid gap-8 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
@@ -43,15 +47,17 @@ export function Footer() {
         <div>
           <h3 className="mb-3 text-sm font-black uppercase tracking-wide">Liên hệ</h3>
           <div className="grid gap-3 text-sm text-emerald-50/80">
-            <span className="flex gap-2"><Phone size={17} /> {siteConfig.phone}</span>
-            <span className="flex gap-2"><Mail size={17} /> {siteConfig.email}</span>
+            <a href={siteConfig.phoneHref} className="flex gap-2 hover:text-white"><Phone size={17} /> {siteConfig.phone}</a>
+            {hasEmail && <a href={`mailto:${siteConfig.email}`} className="flex gap-2 hover:text-white"><Mail size={17} /> {siteConfig.email}</a>}
             <span className="flex gap-2"><MapPin size={17} /> {siteConfig.address}</span>
-            <span className="flex gap-2"><Facebook size={17} /> Facebook / Zalo</span>
+            <a href={siteConfig.zalo} target="_blank" rel="noreferrer" className="flex gap-2 hover:text-white"><MessageCircle size={17} /> Zalo MEMOLACES</a>
+            {hasFacebook && <a href={siteConfig.facebook} target="_blank" rel="noreferrer" className="hover:text-white">Facebook</a>}
+            {hasTikTok && <a href={siteConfig.tiktok} target="_blank" rel="noreferrer" className="hover:text-white">TikTok</a>}
           </div>
         </div>
       </div>
       <div className="border-t border-white/10 py-4 text-center text-xs text-emerald-50/70">
-        © 2026 {siteConfig.shopName}. Dữ liệu hiển thị từ file CSV local.
+        © 2026 {siteConfig.shopName}. All rights reserved.
       </div>
     </footer>
   );

@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   title: 'Hướng dẫn chọn size dây giày',
   description:
     'Gợi ý chọn độ dài dây giày 100cm, 120cm, 140cm, 160cm và 180cm. Liên hệ MEMOLACES qua Zalo để được tư vấn theo mẫu giày.',
+  alternates: { canonical: '/size-guide' },
+  openGraph: {
+    title: 'Hướng dẫn chọn size dây giày | MEMOLACES',
+    description: 'Gợi ý chọn độ dài dây giày 100cm, 120cm, 140cm, 160cm và 180cm.',
+    url: '/size-guide',
+    type: 'article',
+  },
 };
 
 export default function SizeGuidePage() {

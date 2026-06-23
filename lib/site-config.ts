@@ -80,10 +80,13 @@ export const siteConfig = {
     'Liên tục cập nhật mẫu mới',
   ],
   phone: '0862 227 899',
+  phoneHref: 'tel:0862227899',
   zalo: 'https://zalo.me/0862227899',
   email: 'memolaces.vn@gmail.com',
   address: 'Địa chỉ shop đang cập nhật',
   facebook: '#',
   tiktok: '#',
+  canonicalDomain: 'https://memolaces.com',
+  ogImage: '/images/og-memolaces.jpg',
   primaryColor: '#0f766e',
 };

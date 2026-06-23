@@ -26,6 +26,7 @@ const normalizeHeader = (value: string) =>
 const normalizeText = (value: string) =>
   value
     .toLowerCase()
+    .replace(/đ/g, 'd')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
@@ -183,12 +184,20 @@ const normalizeLookup = (value: string) =>
 
 const variantOptionKey = (value: string) => normalizeLookup(value.split(',')[0] ?? value);
 
-const brandCategoryFrom = (rawCategory: string, name: string) => {
+const brandCategoryFrom = (rawCategory: string, name: string, description: string) => {
   const rawLookup = normalizeLookup(rawCategory);
-  const lookup = normalizeLookup(`${rawCategory} ${name}`);
+  const lookup = normalizeLookup(`${name} ${description} ${rawCategory}`);
 
   if (
-    /\b(shoe laces|shoelace|shoelaces|laces|lace|day giay|day oval|day flat|day tron|reflective lace|custom lace)\b/.test(
+    /\b(sticker|charm|hoa treo|day treo|tag|pendant|decoration|decorative|phu kien trang tri|lace lock|dubrae|khoa day|dau tip)\b/.test(
+      lookup,
+    )
+  ) {
+    return 'Phụ Kiện Trang Trí';
+  }
+
+  if (
+    /\b(shoe laces|shoelace|shoelaces|flat laces|oval laces|rope laces|reflective laces|day giay)\b/.test(
       lookup,
     )
   ) {
@@ -196,7 +205,7 @@ const brandCategoryFrom = (rawCategory: string, name: string) => {
   }
 
   if (
-    /\b(shoe care|cleaning|cleaner|brush|care supplies|home care|wash|ve sinh|ban chai|khan lau|dung dich|microfiber|kit cham soc)\b/.test(
+    /\b(cleaner|cleaning|brush|cleaning kit|khan lau|ban chai|ve sinh|dung dich lam sach|khu mui|diet khuan)\b/.test(
       lookup,
     )
   ) {
@@ -204,31 +213,35 @@ const brandCategoryFrom = (rawCategory: string, name: string) => {
   }
 
   if (
-    /\b(storage|organizer|organizers|bag|box|bao quan|hop|tui dung|hut am|chong nhan|shoe storage|shoe box|storage box)\b/.test(
+    /\b(storage|shoe bag|shoe box|shoe tree|crease protector|tui dung|hop bao quan|hut am|chong nhan|bao quan|luu tru|sneaker shield|mieng dan de|bao ve mui)\b/.test(
       lookup,
     )
   ) {
     return 'Bảo Quản Giày';
   }
 
-  if (
-    /\b(charm|tag|tip|dau tip|khoa|phu kien trang tri|phu kien|trang tri|decoration|decor|clock|dong ho|lace tag|lacetag|accessory|accessories)\b/.test(
-      lookup,
-    )
-  ) {
-    return 'Phụ Kiện Trang Trí';
+  if (/\b(shoe laces|shoelace|shoelaces)\b/.test(rawLookup)) {
+    return 'Dây Giày';
   }
 
-  if (/\b(decoration|decor|clock|clocks)\b/.test(rawLookup)) {
+  if (/\b(cleaner|cleaning|brush|ve sinh|khu mui|diet khuan)\b/.test(rawLookup)) {
+    return 'Vệ Sinh Giày';
+  }
+
+  if (/\b(storage|shoe bag|shoe box|bao quan|luu tru|chong nhan)\b/.test(rawLookup)) {
+    return 'Bảo Quản Giày';
+  }
+
+  if (/\b(decoration|decorative|charm|sticker|tag)\b/.test(rawLookup)) {
     return 'Phụ Kiện Trang Trí';
   }
 
   return 'Phụ Kiện Trang Trí';
 };
 
-const inferCategory = (row: CsvRow, name: string) => {
+const inferCategory = (row: CsvRow, name: string, description: string) => {
   const csvCategory = valueOf(row, ['category', 'category_name', 'category_shopee', 'collection', 'nganh_hang', 'danh_muc']);
-  return brandCategoryFrom(csvCategory, name);
+  return brandCategoryFrom(csvCategory, name, description);
 };
 
 const inferLengths = (name: string, variants: ProductVariant[]) =>
@@ -319,12 +332,22 @@ const logCatalogDebug = ({
 
   const testProduct = products.find((product) => product.id === '2978367574');
   const variantsWithPrice = products.flatMap((product) => product.variants).filter((variant) => variant.price > 0).length;
+  const categoryCounts = products.reduce<Record<string, number>>((counts, product) => {
+    counts[product.category] = (counts[product.category] ?? 0) + 1;
+    return counts;
+  }, {});
+  const categorySamples = products
+    .filter((product) => /\b(sticker|charm|hoa treo|day giay)\b/.test(normalizeLookup(product.name)))
+    .slice(0, 12)
+    .map((product) => ({ id: product.id, name: product.name, category: product.category }));
 
   const debugPayload = {
     productRows: productsCsv.rows.length,
     variantRows: variantsCsv.rows.length,
     imageRows: imagesCsv.rows.length,
     variantsWithPrice,
+    categoryCounts,
+    categorySamples,
     headers: {
       products: productsCsv.headers,
       variants: variantsCsv.headers,
@@ -464,7 +487,7 @@ const buildCatalog = (): CatalogData => {
       minPrice: prices.length ? Math.min(...prices) : 0,
       maxPrice: prices.length ? Math.max(...prices) : 0,
       stock: normalizedVariants.reduce((sum, variant) => sum + variant.stock, 0),
-      category: inferCategory(row, name),
+      category: inferCategory(row, name, description),
       lengths: inferLengths(name, normalizedVariants),
       styleTags: inferStyleTags(name, description, normalizedVariants),
       sku: productSku || normalizedVariants[0]?.sku || id,
