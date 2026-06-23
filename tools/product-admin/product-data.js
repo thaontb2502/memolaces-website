@@ -10,6 +10,7 @@ export const PRODUCT_IMAGE_ROOT = path.join(ROOT, 'public/images/products');
 export const BACKUP_DIR = path.join(ROOT, 'backups/products');
 
 export const CATEGORY_OPTIONS = ['Dây Giày', 'Phụ Kiện Trang Trí', 'Vệ Sinh Giày', 'Bảo Quản Giày'];
+export const STATUS_OPTIONS = ['active', 'hidden', 'out_stock', 'featured', 'new', 'sale'];
 
 const CSV_FILES = [PRODUCT_FILE, VARIANT_FILE, IMAGE_FILE];
 
@@ -338,6 +339,23 @@ const removePublicImages = (localPaths) => {
   }
 };
 
+const normalizeStatuses = (value) =>
+  String(value ?? '')
+    .split(/[,\s|]+/)
+    .map((status) => status.trim())
+    .filter((status) => STATUS_OPTIONS.includes(status));
+
+const statusOfProduct = (row) => {
+  const statuses = normalizeStatuses(valueOf(row, ['suggested_web_status', 'status', 'web_status']));
+  return statuses.length ? statuses : ['active'];
+};
+
+const getImageSortNumber = (imageType) => {
+  if (imageType === 'cover') return 0;
+  const number = Number(String(imageType).match(/\d+/)?.[0] ?? 0);
+  return Number.isFinite(number) ? number : 0;
+};
+
 const sortByNumber = (items, getter) =>
   [...items].sort((a, b) => parseInteger(getter(a)) - parseInteger(getter(b)));
 
@@ -389,6 +407,7 @@ export const listProducts = () => {
       total_stock: stock,
       image_count: imageRowsByProduct.get(id)?.length ?? 0,
       variant_count: variants.length,
+      status: statusOfProduct(row),
       skus: [productSku, ...(skuByProduct.get(id) ?? [])].filter(Boolean),
     };
   });
@@ -437,6 +456,7 @@ export const getProductDetail = (productId) => {
     description: valueOf(product, ['description', 'product_description', 'mo_ta']),
     category: categoryOfProduct(product),
     raw_category: valueOf(product, ['category_shopee', 'category', 'category_name', 'danh_muc']),
+    status: statusOfProduct(product),
     parent_sku: valueOf(product, ['parent_sku', 'sku', 'SKU', 'seller_sku']),
     cover_image: cover,
     gallery_images: gallery,
@@ -455,6 +475,9 @@ export const validateProductPayload = (payload, productId, images) => {
   if (!name) errors.push('Tên sản phẩm không được trống.');
   if (!CATEGORY_OPTIONS.includes(payload.category)) errors.push('Danh mục không hợp lệ.');
   if (variants.length === 0) errors.push('Cần ít nhất một phân loại.');
+  const statuses = Array.isArray(payload.status) ? payload.status : normalizeStatuses(payload.status);
+  const invalidStatuses = statuses.filter((status) => !STATUS_OPTIONS.includes(status));
+  if (invalidStatuses.length) errors.push(`Trạng thái không hợp lệ: ${invalidStatuses.join(', ')}.`);
 
   for (const [index, variant] of variants.entries()) {
     const price = parseNumber(variant.price_vnd);
@@ -571,7 +594,7 @@ export const saveProduct = ({ productId, payload, files }) => {
   setValue(productRow, productHeaders, ['price_max_vnd'], Math.max(...prices));
   setValue(productRow, productHeaders, ['total_stock'], stock);
   setValue(productRow, productHeaders, ['variant_count'], variantsWithSkus.length);
-  setValue(productRow, productHeaders, ['suggested_web_status'], 'active');
+  setValue(productRow, productHeaders, ['suggested_web_status'], normalizeStatuses(payload.status).join(',') || 'active');
   setValue(productRow, productHeaders, ['source_note'], isNew ? 'Tạo bằng MEMOLACES local product admin' : 'Cập nhật bằng MEMOLACES local product admin');
 
   productRows.push(productRow);
@@ -620,6 +643,172 @@ export const saveProduct = ({ productId, payload, files }) => {
   writeCsvFile(IMAGE_FILE, imageHeaders, imageRows);
 
   return { ok: true, productId: finalProductId, backups };
+};
+
+export const bulkUpdateVariants = ({ productIds, price, stock }) => {
+  const ids = new Set((Array.isArray(productIds) ? productIds : []).map(String).filter(Boolean));
+  if (ids.size === 0) return { ok: false, status: 400, errors: ['Chưa chọn sản phẩm để sửa hàng loạt.'] };
+
+  const hasPrice = price !== '' && price !== null && price !== undefined;
+  const hasStock = stock !== '' && stock !== null && stock !== undefined;
+  const nextPrice = hasPrice ? parseNumber(price) : null;
+  const nextStock = hasStock ? parseInteger(stock) : null;
+  if (!hasPrice && !hasStock) return { ok: false, status: 400, errors: ['Cần nhập giá hoặc tồn kho mới.'] };
+  if (hasPrice && (!Number.isFinite(nextPrice) || nextPrice <= 0)) return { ok: false, status: 400, errors: ['Giá phải là số > 0.'] };
+  if (hasStock && (!Number.isFinite(nextStock) || nextStock < 0)) return { ok: false, status: 400, errors: ['Tồn kho phải là số >= 0.'] };
+
+  const store = readStore();
+  const variantHeaders = [...store.variants.headers];
+  const productHeaders = [...store.products.headers];
+  const priceHeader = fieldName(variantHeaders, ['price_vnd', 'price', 'gia'], 'price_vnd');
+  const stockHeader = fieldName(variantHeaders, ['stock', 'quantity', 'ton_kho', 'normal_stock'], 'stock');
+  if (!variantHeaders.includes(priceHeader)) variantHeaders.push(priceHeader);
+  if (!variantHeaders.includes(stockHeader)) variantHeaders.push(stockHeader);
+
+  let changedVariants = 0;
+  const variantRows = store.variants.rows.map((row) => {
+    if (!ids.has(productIdOf(row))) return row;
+    const next = { ...row };
+    if (hasPrice) next[priceHeader] = nextPrice;
+    if (hasStock) next[stockHeader] = nextStock;
+    changedVariants += 1;
+    return next;
+  });
+
+  if (changedVariants === 0) return { ok: false, status: 404, errors: ['Không tìm thấy variant thuộc sản phẩm đã chọn.'] };
+
+  const variantsByProduct = new Map();
+  for (const row of variantRows) {
+    const id = productIdOf(row);
+    if (!id || !ids.has(id)) continue;
+    const list = variantsByProduct.get(id) ?? [];
+    list.push(row);
+    variantsByProduct.set(id, list);
+  }
+
+  const productRows = store.products.rows.map((row) => {
+    const id = productIdOf(row);
+    const variants = variantsByProduct.get(id);
+    if (!variants) return row;
+    const prices = variants.map((variant) => parseNumber(valueOf(variant, ['price_vnd', 'price', 'gia']))).filter((value) => value > 0);
+    const totalStock = variants.reduce((sum, variant) => sum + parseInteger(valueOf(variant, ['stock', 'quantity', 'ton_kho', 'normal_stock'])), 0);
+    const next = { ...row };
+    setValue(next, productHeaders, ['price_min_vnd'], prices.length ? Math.min(...prices) : '');
+    setValue(next, productHeaders, ['price_max_vnd'], prices.length ? Math.max(...prices) : '');
+    setValue(next, productHeaders, ['total_stock'], totalStock);
+    setValue(next, productHeaders, ['variant_count'], variants.length);
+    return next;
+  });
+
+  const backups = createBackups();
+  writeCsvFile(VARIANT_FILE, variantHeaders, variantRows);
+  writeCsvFile(PRODUCT_FILE, productHeaders, productRows);
+
+  return { ok: true, changedVariants, productCount: ids.size, backups };
+};
+
+export const addProductImages = ({ productId, files, imageType = 'gallery', optionName = '' }) => {
+  const store = readStore();
+  const product = store.products.rows.find((row) => productIdOf(row) === productId);
+  if (!product) return { ok: false, status: 404, errors: ['Không tìm thấy sản phẩm để thêm ảnh.'] };
+  if (!files.length) return { ok: false, status: 400, errors: ['Chưa chọn file ảnh.'] };
+
+  const normalizedType = imageType === 'cover' ? 'cover' : 'gallery';
+  const copiedImagePaths = [];
+  const backups = createBackups();
+
+  try {
+    files.forEach((file, index) => {
+      const prefix = normalizedType === 'cover' && index === 0 ? 'cover' : `gallery-${Date.now()}-${index + 1}`;
+      copiedImagePaths.push(copyUploadedFile(file, productId, prefix));
+    });
+
+    const imageHeaders = [...store.images.headers];
+    const productHeaders = [...store.products.headers];
+    const currentImageRows = store.images.rows.filter((row) => productIdOf(row) === productId);
+    const otherImageRows = store.images.rows.filter((row) => productIdOf(row) !== productId);
+    const maxGalleryIndex = currentImageRows.reduce((max, row) => {
+      const type = valueOf(row, ['image_type']);
+      return type.startsWith('gallery') ? Math.max(max, getImageSortNumber(type)) : max;
+    }, 0);
+    const productName = valueOf(product, ['product_name', 'name', 'title', 'ten_san_pham']);
+    const nextImageRows = [...otherImageRows];
+    const retainedProductRows =
+      normalizedType === 'cover'
+        ? currentImageRows.filter((row) => valueOf(row, ['image_type']) !== 'cover')
+        : currentImageRows;
+
+    nextImageRows.push(...retainedProductRows);
+    copiedImagePaths.forEach((localPath, index) => {
+      const row = {};
+      setValue(row, imageHeaders, ['product_id'], productId);
+      setValue(row, imageHeaders, ['product_name'], productName);
+      setValue(row, imageHeaders, ['image_type'], normalizedType === 'cover' && index === 0 ? 'cover' : `gallery_${maxGalleryIndex + index + 1}`);
+      setValue(row, imageHeaders, ['option_name'], optionName || '');
+      setValue(row, imageHeaders, ['image_url'], '');
+      setValue(row, imageHeaders, ['local_image_path'], localPath);
+      nextImageRows.push(row);
+    });
+
+    const galleryPaths = nextImageRows
+      .filter((row) => productIdOf(row) === productId && valueOf(row, ['image_type']).startsWith('gallery'))
+      .sort((a, b) => getImageSortNumber(valueOf(a, ['image_type'])) - getImageSortNumber(valueOf(b, ['image_type'])))
+      .map((row) => valueOf(row, ['local_image_path']))
+      .filter(Boolean);
+    const coverPath =
+      normalizedType === 'cover'
+        ? copiedImagePaths[0]
+        : currentImageRows.find((row) => valueOf(row, ['image_type']) === 'cover')?.local_image_path || valueOf(product, ['cover_image']);
+    const productRows = store.products.rows.map((row) => {
+      if (productIdOf(row) !== productId) return row;
+      const next = { ...row };
+      if (coverPath) setValue(next, productHeaders, ['cover_image'], coverPath);
+      setValue(next, productHeaders, ['gallery_images'], galleryPaths.join('|'));
+      return next;
+    });
+
+    writeCsvFile(IMAGE_FILE, imageHeaders, nextImageRows);
+    writeCsvFile(PRODUCT_FILE, productHeaders, productRows);
+    return { ok: true, productId, localPaths: copiedImagePaths, backups };
+  } catch (error) {
+    removePublicImages(copiedImagePaths);
+    return { ok: false, status: 500, errors: [error.message || 'Không thêm được ảnh.'] };
+  }
+};
+
+export const listBackups = () => {
+  if (!fs.existsSync(BACKUP_DIR)) return [];
+  const groups = new Map();
+  for (const fileName of fs.readdirSync(BACKUP_DIR)) {
+    if (fileName === '.gitkeep' || fileName === '.DS_Store') continue;
+    const match = fileName.match(/^(\d{4}-\d{2}-\d{2}-\d{6})-(shopee_(?:products|variants|images)_.*\.csv)$/);
+    if (!match) continue;
+    const [, stamp, csvName] = match;
+    const group = groups.get(stamp) ?? { stamp, files: [] };
+    group.files.push(csvName);
+    groups.set(stamp, group);
+  }
+  return [...groups.values()]
+    .map((group) => ({ ...group, complete: CSV_FILES.every((fileName) => group.files.includes(fileName)) }))
+    .sort((a, b) => b.stamp.localeCompare(a.stamp));
+};
+
+export const restoreBackup = (stamp) => {
+  if (!/^\d{4}-\d{2}-\d{2}-\d{6}$/.test(stamp)) {
+    return { ok: false, status: 400, errors: ['Mốc backup không hợp lệ.'] };
+  }
+
+  const missing = CSV_FILES.filter((fileName) => !fs.existsSync(path.join(BACKUP_DIR, `${stamp}-${fileName}`)));
+  if (missing.length) {
+    return { ok: false, status: 404, errors: [`Backup thiếu file: ${missing.join(', ')}`] };
+  }
+
+  const safetyBackups = createBackups();
+  for (const fileName of CSV_FILES) {
+    fs.copyFileSync(path.join(BACKUP_DIR, `${stamp}-${fileName}`), path.join(ROOT, fileName));
+  }
+
+  return { ok: true, restoredStamp: stamp, safetyBackups };
 };
 
 const findDuplicateSkus = (store, currentProductId, skus) => {
@@ -687,7 +876,7 @@ export const fixVariantSkus = () => {
     return next;
   });
 
-  const backups = changes.length ? createBackups() : [];
+  const backups = createBackups();
   if (changes.length) writeCsvFile(VARIANT_FILE, headers, rows);
 
   return {
@@ -744,6 +933,9 @@ export const buildCheckReport = () => {
   const variantMissingStock = store.variants.rows
     .filter((row) => !valueOf(row, ['stock', 'quantity', 'ton_kho', 'normal_stock']).trim())
     .map((row) => ({ product_id: productIdOf(row), variation_id: valueOf(row, ['variation_id']), variation_name: valueOf(row, ['variation_name']) }));
+  const variantOutOfStock = store.variants.rows
+    .filter((row) => valueOf(row, ['stock', 'quantity', 'ton_kho', 'normal_stock']).trim() && parseInteger(valueOf(row, ['stock', 'quantity', 'ton_kho', 'normal_stock'])) === 0)
+    .map((row) => ({ product_id: productIdOf(row), variation_id: valueOf(row, ['variation_id']), variation_name: valueOf(row, ['variation_name']), sku: variantSkuOf(row) }));
   const imagesMissingFile = store.images.rows
     .map((row) => ({ product_id: productIdOf(row), local_image_path: valueOf(row, ['local_image_path']) }))
     .filter((image) => image.local_image_path && !publicImageExists(image.local_image_path));
@@ -774,6 +966,7 @@ export const buildCheckReport = () => {
     variantMissingPrice,
     variantMissingSku,
     variantMissingStock,
+    variantOutOfStock,
     imagesMissingFile,
     invalidImagePaths,
     unusedFiles,
@@ -804,6 +997,7 @@ export const formatCheckReport = (report) => {
   section('SKU trùng', report.duplicateSkus, (item) => item);
   section('Variant thiếu giá', report.variantMissingPrice, (item) => `${item.product_id} / ${item.variation_id} / ${item.variation_name}`);
   section('Variant thiếu tồn kho', report.variantMissingStock, (item) => `${item.product_id} / ${item.variation_id} / ${item.variation_name}`);
+  section('Variant tồn kho 0', report.variantOutOfStock, (item) => `${item.product_id} / ${item.sku} / ${item.variation_name}`);
   section('Ảnh trong CSV nhưng file không tồn tại', report.imagesMissingFile, (item) => `${item.product_id} - ${item.local_image_path}`);
   section('File ảnh tồn tại nhưng không được dùng trong CSV', report.unusedFiles, (item) => item);
 
