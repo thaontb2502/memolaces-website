@@ -985,10 +985,25 @@
           setStatus('Chưa có sản phẩm để sửa hàng loạt.', 'error');
           return;
         }
+        const rawPrice = $('bulkPrice').value.trim();
+        const rawStock = $('bulkStock').value.trim();
+        if (!rawPrice && !rawStock) {
+          setStatus('Hãy nhập giá hoặc tồn kho mới trước khi áp dụng.', 'error');
+          return;
+        }
+        if (rawPrice && (!Number.isFinite(Number(rawPrice)) || Number(rawPrice) < 0)) {
+          setStatus('Giá mới phải là số không âm.', 'error');
+          return;
+        }
+        if (rawStock && (!Number.isFinite(Number(rawStock)) || Number(rawStock) < 0)) {
+          setStatus('Tồn kho mới phải là số không âm.', 'error');
+          return;
+        }
+        if (!confirm(`Áp dụng cập nhật giá/tồn kho cho ${ids.length} sản phẩm? Tool sẽ tạo backup CSV trước khi ghi.`)) return;
         const payload = {
           productIds: ids,
-          price: $('bulkPrice').value,
-          stock: $('bulkStock').value,
+          price: rawPrice,
+          stock: rawStock,
         };
         setStatus('Đang sửa giá/tồn kho hàng loạt...');
         const response = await fetch('/api/bulk/variants', {
@@ -1014,6 +1029,12 @@
           return;
         }
         if (!files.length) return;
+        const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        const invalidFiles = [...files].filter((file) => !allowedTypes.has(file.type));
+        if (invalidFiles.length) {
+          setStatus(`Chỉ nhận ảnh JPG, JPEG, PNG hoặc WEBP. File bị chặn: ${invalidFiles.map((file) => file.name).join(', ')}`, 'error');
+          return;
+        }
         const data = new FormData();
         [...files].forEach((file) => data.append('images', file));
         data.append('imageType', 'gallery');

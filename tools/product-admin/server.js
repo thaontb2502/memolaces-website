@@ -17,9 +17,12 @@ import {
 } from './product-data.js';
 
 const PORT = Number(process.env.PORT || 4000);
+const HOST = '127.0.0.1';
 const app = express();
 const uploadDir = path.join(ROOT, '.tmp/product-admin-uploads');
 const publicDir = path.join(new URL('.', import.meta.url).pathname, 'public');
+const allowedImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const allowedImageExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
 fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -28,6 +31,14 @@ const upload = multer({
   limits: {
     fileSize: 15 * 1024 * 1024,
     files: 60,
+  },
+  fileFilter: (_request, file, callback) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    if (allowedImageMimeTypes.has(file.mimetype) && allowedImageExtensions.has(ext)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Chỉ nhận file ảnh JPG, JPEG, PNG hoặc WEBP.'));
   },
 });
 
@@ -91,6 +102,11 @@ app.post('/api/bulk/variants', (request, response) => {
 });
 
 app.post('/api/products/:id/images', upload.array('images', 40), (request, response) => {
+  if (!isSafeProductId(request.params.id)) {
+    cleanupFiles(request.files || []);
+    response.status(400).json({ errors: ['product_id không hợp lệ.'] });
+    return;
+  }
   const result = addProductImages({
     productId: request.params.id,
     files: request.files || [],
@@ -121,6 +137,11 @@ app.post('/api/backups/:stamp/restore', (request, response) => {
 });
 
 const handleSave = (request, response, productId = '') => {
+  if (productId && !isSafeProductId(productId)) {
+    cleanupFiles(request.files || []);
+    response.status(400).json({ errors: ['product_id không hợp lệ.'] });
+    return;
+  }
   let payload;
   try {
     payload = JSON.parse(request.body.payload || '{}');
@@ -143,6 +164,8 @@ const cleanupFiles = (files) => {
   for (const file of files) fs.rmSync(file.path, { force: true });
 };
 
+const isSafeProductId = (value) => /^[A-Za-z0-9_-]+$/.test(String(value || '').trim());
+
 const runCommand = (command, args) =>
   new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -161,6 +184,15 @@ const runCommand = (command, args) =>
     child.on('close', (code) => resolve({ code, output }));
   });
 
-app.listen(PORT, () => {
-  console.log(`MEMOLACES product admin đang chạy tại http://localhost:${PORT}`);
+app.use((error, request, response, next) => {
+  if (!error) {
+    next();
+    return;
+  }
+  cleanupFiles(request.files || []);
+  response.status(400).json({ errors: [error.message || 'Yêu cầu upload không hợp lệ.'] });
+});
+
+app.listen(PORT, HOST, () => {
+  console.log(`MEMOLACES product admin đang chạy tại http://${HOST}:${PORT}`);
 });
