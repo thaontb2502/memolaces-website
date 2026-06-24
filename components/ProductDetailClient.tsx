@@ -52,7 +52,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
 
   return (
     <section className="container-page grid gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_500px]">
-      <ProductGallery images={product.images} selectedImage={selectedVariant?.image} productName={product.name} />
+      <ProductGallery images={product.images} selectedImage={selectedVariant?.image || product.coverImage} productName={product.name} />
 
       <div className="h-fit rounded-lg border border-stone-200 bg-white p-5 shadow-lg md:p-7 lg:sticky lg:top-28">
         <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-700">{product.category}</span>

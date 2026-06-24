@@ -184,6 +184,12 @@ const normalizeLookup = (value: string) =>
 
 const variantOptionKey = (value: string) => normalizeLookup(value.split(',')[0] ?? value);
 
+const normalizeStatuses = (value: string) =>
+  String(value ?? '')
+    .split(/[,\s|]+/)
+    .map((status) => status.trim())
+    .filter(Boolean);
+
 const brandCategoryFrom = (rawCategory: string, name: string, description: string) => {
   const rawLookup = normalizeLookup(rawCategory);
   const lookup = normalizeLookup(`${name} ${description} ${rawCategory}`);
@@ -493,6 +499,9 @@ const buildCatalog = (): CatalogData => {
       sku: productSku || normalizedVariants[0]?.sku || id,
       isMissingImage: images.length === 0,
     };
+  }).filter((product, index) => {
+    const statuses = normalizeStatuses(valueOf(productsCsv.rows[index], ['suggested_web_status', 'status', 'web_status']));
+    return !statuses.includes('hidden');
   });
 
   const report: DataReport = {
