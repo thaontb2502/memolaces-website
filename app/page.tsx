@@ -4,6 +4,7 @@ import { getCatalog } from '@/lib/catalog';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
 import { siteConfig } from '@/lib/site-config';
+import { categoryCards } from '@/lib/category-config';
 
 const commitments = [
   { icon: Truck, title: 'Giao hàng nhanh', text: 'Đóng gói kỹ, hỗ trợ theo dõi đơn toàn quốc.' },
@@ -80,16 +81,26 @@ export default function HomePage() {
           </div>
           <Link href="/products" className="text-sm font-black text-emerald-800">Xem tất cả</Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {siteConfig.categories.map((category) => (
-            <Link key={category.name} href={category.href} className="group rounded-lg border border-stone-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50">
-              <span className="mb-4 grid h-12 w-12 place-items-center rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-white"><PackageCheck /></span>
-              <h3 className="font-black text-emerald-950">{category.name}</h3>
-              <p className="mt-2 text-sm leading-6 text-stone-600">{category.description}</p>
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {category.children.slice(0, 3).map((child) => (
-                  <span key={child} className="rounded-full bg-white px-2 py-1 text-xs font-bold text-stone-600 ring-1 ring-stone-200">{child}</span>
-                ))}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {categoryCards.map((category) => (
+            <Link
+              key={category.name}
+              href={category.href}
+              className="group relative overflow-hidden rounded-xl border border-stone-200 bg-stone-100 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="aspect-[4/5] w-full overflow-hidden">
+                <img
+                  src={category.image}
+                  alt={category.alt}
+                  title={category.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                />
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent p-3">
+                <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-xs font-black text-emerald-950 shadow-sm">
+                  {category.name}
+                </span>
               </div>
             </Link>
           ))}
