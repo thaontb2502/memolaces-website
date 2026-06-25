@@ -6,6 +6,7 @@ export function Footer() {
   const hasEmail = Boolean(siteConfig.email && siteConfig.email !== 'email@example.com');
   const hasFacebook = Boolean(siteConfig.facebook && siteConfig.facebook !== '#');
   const hasTikTok = Boolean(siteConfig.tiktok && siteConfig.tiktok !== '#');
+  const hasAddress = Boolean(siteConfig.address && siteConfig.address !== 'Địa chỉ shop đang cập nhật');
 
   return (
     <footer className="border-t border-stone-200 bg-emerald-950 text-white">
@@ -49,7 +50,7 @@ export function Footer() {
           <div className="grid gap-3 text-sm text-emerald-50/80">
             <a href={siteConfig.phoneHref} className="flex gap-2 hover:text-white"><Phone size={17} /> {siteConfig.phone}</a>
             {hasEmail && <a href={`mailto:${siteConfig.email}`} className="flex gap-2 hover:text-white"><Mail size={17} /> {siteConfig.email}</a>}
-            <span className="flex gap-2"><MapPin size={17} /> {siteConfig.address}</span>
+            {hasAddress && <span className="flex gap-2"><MapPin size={17} /> {siteConfig.address}</span>}
             <a href={siteConfig.zalo} target="_blank" rel="noreferrer" className="flex gap-2 hover:text-white"><MessageCircle size={17} /> Zalo MEMOLACES</a>
             {hasFacebook && <a href={siteConfig.facebook} target="_blank" rel="noreferrer" className="hover:text-white">Facebook</a>}
             {hasTikTok && <a href={siteConfig.tiktok} target="_blank" rel="noreferrer" className="hover:text-white">TikTok</a>}

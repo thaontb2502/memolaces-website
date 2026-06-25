@@ -30,6 +30,12 @@ const normalizeText = (value: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+const sanitizePublicText = (value: string) =>
+  value
+    .replace(/�+/g, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
 const parseCsv = (content: string): { headers: string[]; rows: CsvRow[] } => {
   const rows: string[][] = [];
   let current = '';
@@ -155,7 +161,8 @@ const parseNumber = (value: string) => {
 const parseInteger = (value: string) => Math.max(0, Math.floor(parseNumber(value)));
 
 const cleanDescription = (value: string) =>
-  value
+  sanitizePublicText(
+    value
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
     .replace(/<[^>]+>/g, '')
@@ -164,7 +171,8 @@ const cleanDescription = (value: string) =>
     .replace(/&amp;/g, '&')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
-    .trim();
+    .trim(),
+  );
 
 const toLocalImagePath = (value: string) => {
   const raw = value.trim();
@@ -286,7 +294,7 @@ const variantName = (row: CsvRow) => {
   const explicit = valueOf(row, ['variant_name', 'model_name', 'variation_name', 'ten_phan_loai']);
   const option1 = valueOf(row, ['option1_value', 'option_1_value', 'phan_loai_1', 'variation_1']);
   const option2 = valueOf(row, ['option2_value', 'option_2_value', 'phan_loai_2', 'variation_2']);
-  return explicit || [option1, option2].filter(Boolean).join(' / ') || 'Mặc định';
+  return sanitizePublicText(explicit || [option1, option2].filter(Boolean).join(' / ') || 'Mặc định');
 };
 
 const variantPrice = (row: CsvRow) =>
@@ -420,7 +428,7 @@ const buildCatalog = (): CatalogData => {
     const id = productKey(row);
     if (!id) return;
 
-    const sku = valueOf(row, ['sku', 'SKU', 'model_sku', 'seller_sku', 'variation_sku', 'parent_sku']) || `${id}-${index + 1}`;
+    const sku = sanitizePublicText(valueOf(row, ['sku', 'SKU', 'model_sku', 'seller_sku', 'variation_sku', 'parent_sku']) || `${id}-${index + 1}`);
     const option1Value = valueOf(row, ['option1_value', 'option_1_value', 'phan_loai_1', 'variation_1']);
     const option2Value = valueOf(row, ['option2_value', 'option_2_value', 'phan_loai_2', 'variation_2']);
     const name = variantName(row);
@@ -450,12 +458,12 @@ const buildCatalog = (): CatalogData => {
 
   const products = productsCsv.rows.map<Product>((row, index) => {
     const id = productKey(row, `product-${index + 1}`);
-    const name = valueOf(row, ['name', 'product_name', 'title', 'ten_san_pham']) || `Sản phẩm ${index + 1}`;
+    const name = sanitizePublicText(valueOf(row, ['name', 'product_name', 'title', 'ten_san_pham']) || `Sản phẩm ${index + 1}`);
     const productImages = (imagesByProduct.get(id) ?? [])
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((image) => image.url);
     const variants = variantsByProduct.get(id) ?? [];
-    const productSku = valueOf(row, ['sku', 'SKU', 'seller_sku', 'parent_sku']);
+    const productSku = sanitizePublicText(valueOf(row, ['sku', 'SKU', 'seller_sku', 'parent_sku']));
     const fallbackProductPrice = productPrice(row);
     const productStock = parseInteger(valueOf(row, ['stock', 'total_stock', 'quantity', 'ton_kho', 'normal_stock']));
 

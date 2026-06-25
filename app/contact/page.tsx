@@ -20,6 +20,7 @@ export default function ContactPage() {
   const hasEmail = Boolean(siteConfig.email && siteConfig.email !== 'email@example.com');
   const hasFacebook = Boolean(siteConfig.facebook && siteConfig.facebook !== '#');
   const hasTikTok = Boolean(siteConfig.tiktok && siteConfig.tiktok !== '#');
+  const hasAddress = Boolean(siteConfig.address && siteConfig.address !== 'Địa chỉ shop đang cập nhật');
 
   return (
     <>
@@ -35,7 +36,7 @@ export default function ContactPage() {
             <div className="mt-5 grid gap-3 text-sm text-stone-700">
               <a href={siteConfig.phoneHref} className="flex items-center gap-2 font-bold hover:text-emerald-800"><Phone size={18} className="text-emerald-700" /> {siteConfig.phone}</a>
               {hasEmail && <a href={`mailto:${siteConfig.email}`} className="flex items-center gap-2 font-bold hover:text-emerald-800"><Mail size={18} className="text-emerald-700" /> {siteConfig.email}</a>}
-              <span className="flex items-center gap-2"><MapPin size={18} className="text-emerald-700" /> {siteConfig.address}</span>
+              {hasAddress && <span className="flex items-center gap-2"><MapPin size={18} className="text-emerald-700" /> {siteConfig.address}</span>}
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <a href={siteConfig.phoneHref} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-emerald-900 px-4 py-3 text-sm font-black text-white">

@@ -19,6 +19,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
 
   const stock = selectedVariant?.stock ?? 0;
   const canBuy = Boolean(selectedVariant && stock > 0 && selectedVariant.price > 0);
+  const showLengthGuide = product.category === 'Dây Giày';
   const displayPrice = selectedVariant
     ? selectedVariant.price > 0
       ? formatCurrency(selectedVariant.price)
@@ -104,17 +105,19 @@ export function ProductDetailClient({ product }: { product: Product }) {
           Tư vấn qua Zalo
         </a>
 
-        <div className="mt-6 rounded-lg border border-stone-200 bg-stone-50 p-4">
-          <h2 className="text-sm font-black uppercase tracking-wide text-emerald-700">Hướng dẫn chọn độ dài dây</h2>
-          <div className="mt-3 grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
-            {siteConfig.lengths.map((item) => (
-              <Link key={item.label} href={item.href} className="rounded-md bg-white px-3 py-2 font-bold hover:text-emerald-800">
-                {item.label}: <span className="font-normal">{item.text}</span>
-              </Link>
-            ))}
+        {showLengthGuide && (
+          <div className="mt-6 rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <h2 className="text-sm font-black uppercase tracking-wide text-emerald-700">Hướng dẫn chọn độ dài dây</h2>
+            <div className="mt-3 grid gap-2 text-sm text-stone-700 sm:grid-cols-2">
+              {siteConfig.lengths.map((item) => (
+                <Link key={item.label} href={item.href} className="rounded-md bg-white px-3 py-2 font-bold hover:text-emerald-800">
+                  {item.label}: <span className="font-normal">{item.text}</span>
+                </Link>
+              ))}
+            </div>
+            <p className="mt-3 text-xs font-bold text-stone-500">Thông tin chỉ là gợi ý. Liên hệ Zalo để được tư vấn chính xác theo mẫu giày.</p>
           </div>
-          <p className="mt-3 text-xs font-bold text-stone-500">Thông tin chỉ là gợi ý. Liên hệ Zalo để được tư vấn chính xác theo mẫu giày.</p>
-        </div>
+        )}
 
         <div className="mt-6 grid gap-3 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-sm text-stone-700">
           <div className="flex gap-2"><Truck size={19} className="text-emerald-700" /> Giao hàng toàn quốc, đóng gói cẩn thận</div>

@@ -10,7 +10,7 @@ const commitments = [
   { icon: Truck, title: 'Giao hàng nhanh', text: 'Đóng gói kỹ, hỗ trợ theo dõi đơn toàn quốc.' },
   { icon: RefreshCw, title: 'Đổi trả dễ dàng', text: 'Hỗ trợ đổi trả khi sản phẩm có lỗi từ shop.' },
   { icon: Headphones, title: 'Hỗ trợ khách hàng', text: `Tư vấn qua hotline ${siteConfig.phone} và Zalo.` },
-  { icon: CreditCard, title: 'Thanh toán an toàn', text: 'Tóm tắt đơn rõ ràng, sẵn sàng tích hợp thanh toán online.' },
+  { icon: CreditCard, title: 'Thanh toán an toàn', text: 'Tóm tắt đơn rõ ràng, xác nhận nhanh qua Zalo.' },
 ];
 
 const featuredCollections = [

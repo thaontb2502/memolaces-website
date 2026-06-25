@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { Product, SortOption } from '@/lib/types';
 import { FilterSidebar } from './FilterSidebar';
 import { ProductGrid } from './ProductGrid';
@@ -25,23 +25,17 @@ export function ProductsPageClient({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') ?? '';
-  const initialCategory = searchParams.get('category') ?? 'all';
-  const initialStyle = searchParams.get('style') ?? 'all';
-  const initialLength = searchParams.get('length') ?? 'all';
-  const initialStock = searchParams.get('stock') ?? 'all';
-  const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState(initialCategory);
-  const [style, setStyle] = useState(initialStyle);
-  const [length, setLength] = useState(initialLength);
-  const [stock, setStock] = useState(initialStock);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const [style, setStyle] = useState('all');
+  const [length, setLength] = useState('all');
+  const [stock, setStock] = useState('all');
   const [price, setPrice] = useState('all');
   const [sort, setSort] = useState<SortOption>('newest');
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   const updateUrl = (updates: { category?: string; q?: string; stock?: string; style?: string; length?: string }) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
 
     if ('category' in updates) {
       if (!updates.category || updates.category === 'all') params.delete('category');
@@ -73,13 +67,20 @@ export function ProductsPageClient({
   };
 
   useEffect(() => {
-    setQuery(initialQuery);
-    setCategory(initialCategory);
-    setStyle(initialStyle);
-    setLength(initialLength);
-    setStock(initialStock);
-    setVisible(PAGE_SIZE);
-  }, [initialCategory, initialLength, initialQuery, initialStock, initialStyle]);
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      setQuery(params.get('q') ?? '');
+      setCategory(params.get('category') ?? 'all');
+      setStyle(params.get('style') ?? 'all');
+      setLength(params.get('length') ?? 'all');
+      setStock(params.get('stock') ?? 'all');
+      setVisible(PAGE_SIZE);
+    };
+
+    syncFromUrl();
+    window.addEventListener('popstate', syncFromUrl);
+    return () => window.removeEventListener('popstate', syncFromUrl);
+  }, [pathname]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = normalize(query);
